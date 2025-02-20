@@ -13,7 +13,7 @@ from python_launchpad.utils.Secrets import generateKeys, getSecretsFileKeyPath
 
 def init(password):
 
-
+  
 
   generateKeys(password)
   
