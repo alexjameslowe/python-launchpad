@@ -1,0 +1,5 @@
+{
+  "launch_handle":"python_launchpad",
+  "system_python_handle":"python3",
+  "python_location_for_venv":"C:/Program Files/<The Python You Want To Use>" 
+}

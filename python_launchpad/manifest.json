@@ -1,0 +1,22 @@
+[
+    "tasks/ExampleTask/Background.py",
+    "tasks/ExampleTask/Foreground.py",
+    "tasks/ExampleTask/TaskInfo.py",
+    "utils/BackgroundRunner.py", 
+    "utils/Configure.py", 
+    "utils/File.py", 
+    "utils/Format.py", 
+    "utils/GracefulExit.py", 
+    "utils/Init.py", 
+    "utils/NonThreadVar.py", 
+    "utils/SubprocessLauncher.py", 
+    "utils/Task.py",
+    "utils/Utils.py", 
+    "utils/Var.py", 
+    "utils/VEnv.py",
+    "launchpad.py",
+    "main.py",
+    "Tasks.py",
+    "Info.py",
+    "settings.json"
+]
