@@ -158,6 +158,23 @@ def installRequirements(performInstall, hexDigest):
     setVar(REQUIREMENTS_HEX_DIGEST, hexDigest)
 
 
+# Do this for the virtual environment during the init proicess.
+#
+#
+def initVEnv():
+  wasVenvCreated = createVEnv()
+
+  if(not isVenvActive()):
+
+    performInstall = None
+    hexDigest = None
+    
+    if(not wasVenvCreated):
+      performInstall, hexDigest = doWeNeedToPerformPipInstall()
+
+      installRequirements(performInstall, hexDigest)
+
+
 # Activate the linux or windows virtual environment
 # This is idempotent. If it's already active, this will have no effect.
 #
@@ -175,7 +192,7 @@ def installRequirements(performInstall, hexDigest):
 # https://superuser.com/questions/671372/running-command-in-new-bash-shell-with-rcfile-and-c
 # https://stackoverflow.com/questions/6943208/activate-a-virtualenv-with-a-python-script
 #
-def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False):
+def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False, initStage2=False, stage2Password=None, stage2Handle=None):
 
   wasVenvCreated = createVEnv()
   tasksModuleName = 'tasks'
@@ -259,7 +276,8 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     except Exception as err:
       print(f"Module not found: {str(err)}")
 
-  else:
-    pass 
+  elif(initStage2):
+    module = importlib.import_module(f'python_launchpad.utils.InitStage2')
+    module.init(stage2Password, stage2Handle)
 
   

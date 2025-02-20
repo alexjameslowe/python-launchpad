@@ -8,6 +8,7 @@
     "utils/Format.py", 
     "utils/GracefulExit.py", 
     "utils/Init.py", 
+    "utils/InitStage2.py", 
     "utils/NonThreadVar.py", 
     "utils/SubprocessLauncher.py", 
     "utils/Task.py",

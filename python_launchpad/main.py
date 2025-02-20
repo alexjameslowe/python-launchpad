@@ -34,7 +34,6 @@ def main():
   parser.add_argument('-graceful-exit', help='Do you want to exit gracefully?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
 
-  #ALEX-COPYSCRIPT
   parser.add_argument('-init', help='Run the report in the background as a subprocess.', required=False, default=None)
 
   #This will add arguments for the different tasks

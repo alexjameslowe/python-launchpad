@@ -18,6 +18,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
+from python_launchpad.utils.VEnv import activate
 
 filePath = path.abspath(path.dirname(__file__))
 
@@ -60,9 +61,21 @@ def readProfileJSON():
 def getLaunchpadDirectory(asObj=False):
   return joinPath(SCRIPT_DIR, "..", asObj=asObj)
 
+##
+# get the path to the public key
+#
+def getPublicKeyPath():
+  return joinPath(getDataDirectory(), 'public_key.txt')
+
+##
+# get the path to the secrets file where all of the secrets are stored.
+#
+def getSecretsFilePath():
+  return joinPath(getDataDirectory(), 'secrets.json')
+
 
 ####
-# get the main settings, which is really just the program_data directory
+# get a main setting
 #
 #
 def getMainSetting(key):
@@ -73,13 +86,33 @@ def getMainSetting(key):
   else:
     return setting
   
+
+####
+# set a main setting
+#
+#
+def setMainSetting(key, value):
+  try:
+
+    readMainJSON()
+    mainJSONDataObj[key] = value
+    writeMainJSON()
+
+    print(f"Set {value} for key: '{key}'")
+
+  except Exception as err:
+    print(f"695849 Something went wrong. Could not set {value} for key: '{key}': {str(err)}")
+
+
+
 ####
 # All of the data that the program needs to run is organized by profile.
 #
 #
 def getDataDirectory():
   launchHandle = getMainSetting("launch_handle")
-  return joinPath(getLaunchpadDirectory(), f"{launchHandle}_data")
+  return joinPath(getLaunchpadDirectory(), '..', f"{launchHandle}_data")
+
 
 ####
 # Return the profile uri for the user
@@ -87,6 +120,7 @@ def getDataDirectory():
 #
 def getProfile():
   return joinPath(getDataDirectory(), "profile.json") 
+
 
 ###
 # Return main uri
@@ -117,10 +151,10 @@ def setProfileSetting(key, value):
     #     mkdir(outputDirURI)
 
   except Exception as exp:
-    print(f"Something went wrong. Could not set {value} for key: '{key}': {str(exp)}")
+    print(f"030495 Something went wrong. Could not set {value} for key: '{key}': {str(exp)}")
 
 
-def getPr_ofileSetting(key, _default=None):
+def getProfileSetting(key, _default=None):
   readProfileJSON()
   return profileJSONDataObj.get(key, _default)
 
@@ -150,6 +184,8 @@ def writeMainJSON():
 def configure(jsonURI):
 
   global mainJSONDataObj, profileJSONDataObj
+
+  initStage2 = False
 
   try:
 
@@ -207,9 +243,17 @@ def configure(jsonURI):
     print("* ")
     print("* ")
     print("**********************************************************")
+
+    initStage2 = True
     
   except Exception as err:
     print(f"* Error: Could not configure: {str(err)}")
     print("* "+getHelpMsg())
     print("* ")
     print("**********************************************************")
+
+  
+  if(initStage2):
+    print("Initializing your virtual environment")
+    activate(initStage2=True, stage2Password='testing123')
+
