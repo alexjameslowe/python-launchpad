@@ -13,6 +13,7 @@
     "utils/SubprocessLauncher.py", 
     "utils/Task.py",
     "utils/Utils.py", 
+    "utils/Secrets.py",
     "utils/Var.py", 
     "utils/VEnv.py",
     "launchpad.py",

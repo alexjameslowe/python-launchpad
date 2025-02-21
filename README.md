@@ -67,3 +67,8 @@ This will build your virtual enviornment in an out-of-the way location and allow
 
 
 
+
+
+Remove-Item windu* -Force -Recurse; Copy-Item ..\python-launchpad\python_launchpad .\ -Recurse -Force; python3 ./python_launchpad/main.py -init windu
+
+python3 ./windu.py -config ./windu_settings.json

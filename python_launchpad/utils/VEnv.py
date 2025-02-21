@@ -91,6 +91,7 @@ def refreshRequirementsFile():
 # the installation completes successfully.
 #
 def doWeNeedToPerformPipInstall(): 
+
   if(not isVar(REQUIREMENTS_HEX_DIGEST)):
 
     hexDigest = getRequirementsFileHexHash()
@@ -128,8 +129,8 @@ def createVEnv():
 
   if(not path.isdir(venvPath)):
 
-    pythonPath = getMainSetting("python_location_for_venv", None)
-    systemPython = getMainSetting("system_python_handle", "python")
+    pythonPath = getMainSetting("python_location_for_venv")
+    systemPython = getMainSetting("system_python_handle")
 
     if(not pythonPath):
       raise Exception("Missing python_location_for_venv from settings")
@@ -161,18 +162,18 @@ def installRequirements(performInstall, hexDigest):
 # Do this for the virtual environment during the init proicess.
 #
 #
-def initVEnv():
-  wasVenvCreated = createVEnv()
+# def initVEnv():
+#   wasVenvCreated = createVEnv()
 
-  if(not isVenvActive()):
+#   if(not isVenvActive()):
 
-    performInstall = None
-    hexDigest = None
+#     performInstall = None
+#     hexDigest = None
     
-    if(not wasVenvCreated):
-      performInstall, hexDigest = doWeNeedToPerformPipInstall()
+#     if(not wasVenvCreated):
+#       performInstall, hexDigest = doWeNeedToPerformPipInstall()
 
-      installRequirements(performInstall, hexDigest)
+#       installRequirements(performInstall, hexDigest)
 
 
 # Activate the linux or windows virtual environment
@@ -192,7 +193,7 @@ def initVEnv():
 # https://superuser.com/questions/671372/running-command-in-new-bash-shell-with-rcfile-and-c
 # https://stackoverflow.com/questions/6943208/activate-a-virtualenv-with-a-python-script
 #
-def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False, initStage2=False, stage2Password=None, stage2Handle=None):
+def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False):
 
   wasVenvCreated = createVEnv()
   tasksModuleName = 'tasks'
@@ -276,8 +277,54 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     except Exception as err:
       print(f"Module not found: {str(err)}")
 
-  elif(initStage2):
-    module = importlib.import_module(f'python_launchpad.utils.InitStage2')
-    module.init(stage2Password, stage2Handle)
+  # elif(initStage2):
+  #   module = importlib.import_module(f'python_launchpad.utils.InitStage2')
+  #   module.init(stage2Password, stage2Handle)
+
+  
+
+
+def runModuleInVEnv(modulePackageString):
+
+  createVEnv()
+
+  if(not isVenvActive()):
+
+    venvPath = getVenvPath()
+
+    performInstall = None
+    hexDigest = None
+
+    performInstall, hexDigest = doWeNeedToPerformPipInstall()
+
+    # https://www.a2hosting.com/kb/developer-corner/python/activating-a-python-virtual-environment-from-a-script-file
+    # here's how we activate the virtual environment programmatically.
+    # there's no need for a deactivate function. The effects of the activate_this.py
+    # only persist for the current run of the script.
+    # then when it's done it will install the requirements in the virtual environment
+    
+    activate_this = None 
+
+    if(isWindows()):
+      activate_this =  joinPath(venvPath, "Scripts", "activate_this.py")
+    else:
+      activate_this = joinPath(venvPath, "bin", "activate_this.py")
+
+    
+    # https://www.a2hosting.com/kb/developer-corner/python/activating-a-python-virtual-environment-from-a-script-file
+    # here's how we activate the virtual environment programmatically.
+    # there's no need for a deactivate function. The effects of the activate_this.py
+    # only persist for the current run of the script.
+    with open(activate_this) as f:
+      code = compile(f.read(), activate_this, 'exec')
+      exec(code, dict(__file__=activate_this))
+
+    try:
+      installRequirements(performInstall, hexDigest)
+    except Exception as err:
+      raise Exception(f"5874 {str(err)} Installation failed.")
+     
+  module = importlib.import_module(modulePackageString)
+  return module
 
   

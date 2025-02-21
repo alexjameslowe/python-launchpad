@@ -6,7 +6,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Configure import configure, setProfileSetting, getMainSetting, versionInfo
-from python_launchpad.utils.VEnv import activate
+from python_launchpad.utils.VEnv import activate, runModuleInVEnv
 from python_launchpad.utils.Task import parseArgs, getTaskInfo
 from python_launchpad.utils.Init import init
 from python_launchpad.Tasks import TASKS
@@ -28,8 +28,14 @@ def main():
   parser=argparse.ArgumentParser()
   parser.add_argument('-config', help='Configure the program.', required=False, default=None)
   parser.add_argument('-test', help='Is this a test?', required=False, default="0", const="1", nargs='?')
+  
   parser.add_argument('-set-value', help='Whats the value of the setting youd like to set?', required=False, default=None)
+  
+  parser.add_argument('-set-secret', help='What secret do you want to save?', required=False, default=None)
+  parser.add_argument('-get-secret', help='You want to get a secret?', required=False, default="0", const="1", nargs='?')
+  
   parser.add_argument('-for-key', help='Which key do you want to set the value for?', required=False, default=None)
+  
   parser.add_argument('-v', help='Get version info', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-graceful-exit', help='Do you want to exit gracefully?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
@@ -42,7 +48,10 @@ def main():
   args=vars(parser.parse_args())
 
   setValue = args.get('set_value', None) 
+  setSecret = args.get('set_secret', None) 
+  getSecret = args.get('get_secret', None)  == "1"
   forKey = args.get('for_key', None) 
+
   configFileURI = args.get('config', None) 
   version = args.get('v', None)  == "1"
   gracefulExit = args.get('graceful_exit', None)  == "1"
@@ -73,9 +82,21 @@ def main():
   if(configFileURI):
     configure(configFileURI)
 
+    module = runModuleInVEnv('python_launchpad.utils.InitStage2')
+    module.init()
+
   #If we're setting a value in the profile data, then do that here.
   elif(setValue != None and forKey != None):
     setProfileSetting(forKey, setValue)
+
+  elif(setSecret != None and forKey != None):
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    secrets.setSecret(forKey, setSecret)
+
+  elif(getSecret and forKey != None):
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    print(f"secret for '{forKey}': ")
+    print(secrets.getSecret(forKey))
 
   elif(initPfx != None):
     init(initPfx)

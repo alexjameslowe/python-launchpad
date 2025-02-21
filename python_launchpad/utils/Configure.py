@@ -18,7 +18,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
-from python_launchpad.utils.VEnv import activate
+#from python_launchpad.utils.VEnv import activate
 
 filePath = path.abspath(path.dirname(__file__))
 
@@ -110,7 +110,7 @@ def setMainSetting(key, value):
 #
 #
 def getDataDirectory():
-  launchHandle = getMainSetting("launch_handle")
+  launchHandle = getMainSetting("launchpad_handle")
   return joinPath(getLaunchpadDirectory(), '..', f"{launchHandle}_data")
 
 
@@ -181,71 +181,53 @@ def writeMainJSON():
     jsonFile.close()
 
 
-def configure(jsonURI):
+def configure(jsonURI=None):
 
   global mainJSONDataObj, profileJSONDataObj
 
-  initStage2 = False
-
   try:
-
+      
     print("**********************************************************")
     print("* ")
     print(f"* Configuring {PRODUCT_NAME}...")
-    print(f"* Using settings: {jsonURI}")
 
-    configurationData = readJSON(jsonURI, errorMode=2)
-    launchpadHandle = configurationData.get("launchpad_handle")
+    if(path.isfile(getMain())):
 
-    if(launchpadHandle == None):
-      raise Exception("Missing launchpad_handle in settings")
-    
+      print("* It looks like the launcher was already configured.")
+      print("* ")
+      print("**********************************************************")
 
-    #mainConfig = configurationData.get('main', None)
+    else:
 
-    #Configure the main. Get the uri for the program data,
-    #and make the folder for it if there isn't already one there.
-    #if(mainConfig == None):
-    #  raise Exception("No 'main' section of config file")
-    
-    # programDir = joinPath(getLaunchpadDirectory(), '..', launchpadHandle)
-    
-    # try:
-    #   if(not path.isdir(programDir)):
-    #     mkdir(programDir)
-    # except Exception as err:
-    #   raise Exception(f'Could not make the program directory. Did you make a mistake in yout settings file? Here\'s the error: {str(err)}')
+      print(f"* Using settings: {jsonURI}")
 
-    #fullUserProfileURI = joinPath(programDir, mainUser)
-    #if(not path.isdir(fullUserProfileURI)):
-    #  mkdir(fullUserProfileURI)
+      configurationData = readJSON(jsonURI, errorMode=2)
+      launchpadHandle = configurationData.get("launchpad_handle")
 
-    mainJSONDataObj = configurationData
+      if(launchpadHandle == None):
+        raise Exception("Missing launchpad_handle in settings")
+      
+      mainJSONDataObj = configurationData
 
-    writeMainJSON()
+      writeMainJSON()
 
-    #pythonPath = profileConfig.get("python_location_for_venv", None)
-    #systemPython = profileConfig.get("system_python_handle", "python")
+      ##Fill in your other things in here.
+      
+      profileJSONDataObj = {}
 
-    ##Fill in your other things in here.
-    
-    profileJSONDataObj = {}
+      writeProfileJSON()
 
-    writeProfileJSON()
+      print("* Configuration Succeeded!")
+      print(f"* You don't need your file '{jsonURI}' anymore.")
+      print("* You can get rid of it if you want.")
+      print("* From now on you can change the settings by editing:")
+      print("* "+getMain())
+      print("* ")
+      # print more stuff here about the output directory or whatever.
+      print("* ")
+      print("* ")
+      print("**********************************************************")
 
-    print("* Configuration Succeeded!")
-    print(f"* You don't need your file '{jsonURI}' anymore.")
-    print("* You can get rid of it if you want.")
-    print("* From now on you can change the settings by editing:")
-    print("* "+joinPath(getDataDirectory(),'profile.json'))
-    print("* ")
-    # print more stuff here about the output directory or whatever.
-    print("* ")
-    print("* ")
-    print("**********************************************************")
-
-    initStage2 = True
-    
   except Exception as err:
     print(f"* Error: Could not configure: {str(err)}")
     print("* "+getHelpMsg())
@@ -253,7 +235,7 @@ def configure(jsonURI):
     print("**********************************************************")
 
   
-  if(initStage2):
-    print("Initializing your virtual environment")
-    activate(initStage2=True, stage2Password='testing123')
+  # if(initStage2):
+  #   print("Initializing your virtual environment")
+  #   activate(initStage2=True, stage2Password='testing123')
 

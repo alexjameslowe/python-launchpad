@@ -9,11 +9,21 @@
 ###########################################################################
 
 
-from python_launchpad.utils.Secrets import generateKeys, getSecretsFileKeyPath
+from python_launchpad.utils.Secrets import generateKeys
+from python_launchpad.utils.Configure import getMainSetting
 
-def init(password):
+def init():
 
-  
-
-  generateKeys(password)
+  print(" ")
+  print(" ")
+  print(" ")
+  print("**********************************************************")
+  print("* ")
+  print("* Generating public and private key for secrets")
+  print("* ")
+  try:
+    generateKeys()
+  except Exception as err:
+    print(f"Error: {str(err)}")
+  print("**********************************************************")
   

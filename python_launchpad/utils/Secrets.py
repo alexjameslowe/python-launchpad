@@ -13,9 +13,10 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Random import get_random_bytes
 from keyring import get_password, set_password
 
-from python_launchpad.utils.Configure import getMainSetting, getPublicKeyPath, getSecretsFilePath
-from python_launchpad.utils.Format import joinPath
-from python_launchpad.utils.Utils import readJSON
+from windu_launchpad.utils.Configure import getMainSetting, getPublicKeyPath, getSecretsFilePath
+from windu_launchpad.utils.Format import joinPath
+from windu_launchpad.utils.Utils import readJSON
+from windu_launchpad.utils.Format import isWindows
 from os import path
 import json
 from base64 import b64decode,b64encode
@@ -26,9 +27,9 @@ CACHED_DECRYPTED = None
 
 
 def getServiceName():
-  launchHandle = getMainSetting("launch_handle")
+  launchHandle = getMainSetting("launchpad_handle")
   if(launchHandle == None):
-    raise Exception("launch_handle is missing fro the main config json")
+    raise Exception("launchpad_handle is missing fro the main config json")
   
   return f'{launchHandle}_launchpad'
 
@@ -87,12 +88,18 @@ def writePublicKey(pubKey):
 # Generate the public key
 # TODO see if we can specify another password.
 #
-def generateKeys(password):
+def generateKeys(password=None):
 
   global PUBLIC_KEY
 
+  #Windows has this issue with the size of the keys
+  #https://github.com/Azure/azure-sdk-for-python/issues/9857
+  #keyring.set_password() fails on Windows with a 1281 character password, 
+  #with the (1783, 'CredWrite', 'The stub received bad data') message, but 
+  #succeeds with 1280 characters.
+
   # Generate RSA keys
-  key = RSA.generate(2048)
+  key = RSA.generate(1280) if isWindows() else RSA.generate(2048)
   privateKey = key.export_key(format='PEM').decode('utf-8')
   PUBLIC_KEY = key.publickey().export_key(format='PEM').decode('utf-8')
 
@@ -110,7 +117,7 @@ def writeSecretsJSON():
     if(SECRETS != None):
       json.dump(SECRETS, secretsFile)
     else:
-      secretsFile.write('[]')
+      secretsFile.write('{}')
 
     secretsFile.close()
 
@@ -133,14 +140,25 @@ def readSecretsJSON():
 # https://stackoverflow.com/questions/21327491/using-pycrypto-how-to-import-a-rsa-public-key-and-use-it-to-encrypt-a-string
 # https://medium.com/@info_82002/a-beginners-guide-to-encryption-and-decryption-in-python-12d81f6a9eac
 #
-def encrypt(key, value, asjson=False, asBatch=False):
+# For solving confusion about how the key should be serialized and reacquired when storing it as a string
+# https://stackoverflow.com/questions/21327491/using-pycrypto-how-to-import-a-rsa-public-key-and-use-it-to-encrypt-a-string
+def setSecret(key, value, asjson=False, asBatch=False):
+
+  global SECRETS 
+
   readSecretsJSON()
 
-  keyB64Decoded = b64decode(getPublicKey())
-  publicKeyObj = RSA.importKey(keyB64Decoded)
+  if(SECRETS == None):
+    SECRETS = {}
+
+  publicKeyObj = RSA.importKey(getPublicKey())
 
   cipherRSA = PKCS1_OAEP.new(publicKeyObj)
-  cipherText = cipherRSA.encrypt( str(value) if asjson == False else json.dumps(value) )
+
+  mgToEncrypt = str(value) if asjson == False else json.dumps(value)
+  bytesToEncrypt = mgToEncrypt.encode('utf-8')
+
+  cipherText = b64encode( cipherRSA.encrypt( bytesToEncrypt ) ).decode("utf-8")
 
   SECRETS[key] = cipherText
 
@@ -152,9 +170,14 @@ def encrypt(key, value, asjson=False, asBatch=False):
 # Decrypt a secret
 #
 #
-def decrypt(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=False, ascsvlist=False):
+def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=False, ascsvlist=False):
  
+  global CACHED_DECRYPTED
+
   readSecretsJSON()
+
+  if(CACHED_DECRYPTED == None):
+    CACHED_DECRYPTED = {}
 
   cached = CACHED_DECRYPTED.get(key, None)
 
@@ -166,11 +189,11 @@ def decrypt(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=F
   if(cipherText == None):
     return defval
   
-  keyB64Decoded = b64decode(getPrivateKey())
+  cipherBytes = b64decode(cipherText)
   
-  cipherRSA = PKCS1_OAEP.new(RSA.import_key(keyB64Decoded))
+  cipherRSA = PKCS1_OAEP.new(RSA.import_key(getPrivateKey()))
 
-  varContents = cipherRSA.decrypt(cipherRSA)
+  varContents = cipherRSA.decrypt(cipherBytes)
 
   varToReturn = None
 
@@ -193,23 +216,3 @@ def decrypt(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=F
 
   return varToReturn
 
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def encrypt(msg):
-  pass
