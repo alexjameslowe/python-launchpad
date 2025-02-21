@@ -3,7 +3,7 @@ from sys import path as syspath
 import subprocess
 from time import sleep
 
-from python_launchpad.utils.Configure import getMainSetting, getDataDirectory, getLaunchpadDirectory
+from python_launchpad.utils.Configure import getDataDirectory, getPythonExecutable
 from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
@@ -24,7 +24,6 @@ def launch(args, taskInfo):
   pid = 0
 
   outputFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}.txt")
-  projectDirectory = getLaunchpadDirectory()
 
   try:
 
@@ -36,11 +35,13 @@ def launch(args, taskInfo):
     if(isRunning):
       raise Exception("There's already a report running. Please wait for it to stop.")
 
+    #TODO make this work with linux    
+   
     #Put together arguments for the subprocess. Note that we're calling
     #the python executable from the virtual environment if a virtual environment
     #is specified. otherwise we're just going to use the system python_handle
     subProcessArgs = [
-      joinPath(projectDirectory, 'wenv', 'Scripts', 'python.exe'),
+      getPythonExecutable(),
       joinPath(SCRIPT_DIR, '..', 'main.py'),
     ]
 

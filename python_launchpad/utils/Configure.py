@@ -16,7 +16,7 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
-from python_launchpad.utils.Format import joinPath
+from python_launchpad.utils.Format import joinPath, isWindows
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 #from python_launchpad.utils.VEnv import activate
 
@@ -129,6 +129,30 @@ def getMain():
   return joinPath(SCRIPT_DIR, '..', 'main.json')
   
 
+# Get the name of the venv which depends on the platform and the product
+#
+def getVEnvName():
+  name = 'wenv' if isWindows() else 'lenv'
+  return f"{name}"
+
+##
+# Get the path to the venv
+#
+def getVenvPath():
+  dataDirectory = getDataDirectory()
+  venvName = getVEnvName()
+  venvPath = joinPath(dataDirectory, venvName)
+  return venvPath  
+
+##
+# get the path to the python executable
+#
+#
+def getPythonExecutable():  
+  pythonVenvPath = joinPath(getVenvPath(), 'Scripts', 'python.exe') if isWindows() else joinPath(getVenvPath(), 'Scripts', 'python')
+  return pythonVenvPath
+
+
 #####
 # getter and setter for the profile settings.
 #
@@ -157,6 +181,9 @@ def setProfileSetting(key, value):
 def getProfileSetting(key, _default=None):
   readProfileJSON()
   return profileJSONDataObj.get(key, _default)
+
+
+
 
 
 ####

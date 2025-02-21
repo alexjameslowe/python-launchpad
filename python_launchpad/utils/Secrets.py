@@ -13,10 +13,10 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Random import get_random_bytes
 from keyring import get_password, set_password
 
-from windu_launchpad.utils.Configure import getMainSetting, getPublicKeyPath, getSecretsFilePath
-from windu_launchpad.utils.Format import joinPath
-from windu_launchpad.utils.Utils import readJSON
-from windu_launchpad.utils.Format import isWindows
+from python_launchpad.utils.Configure import getMainSetting, getPublicKeyPath, getSecretsFilePath
+from python_launchpad.utils.Format import joinPath
+from python_launchpad.utils.Utils import readJSON
+from python_launchpad.utils.Format import isWindows
 from os import path
 import json
 from base64 import b64decode,b64encode
