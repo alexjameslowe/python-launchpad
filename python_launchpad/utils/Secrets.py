@@ -193,7 +193,7 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   
   cipherRSA = PKCS1_OAEP.new(RSA.import_key(getPrivateKey()))
 
-  varContents = cipherRSA.decrypt(cipherBytes)
+  varContents = cipherRSA.decrypt(cipherBytes).decode('utf-8')
 
   varToReturn = None
 
