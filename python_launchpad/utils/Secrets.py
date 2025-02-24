@@ -138,25 +138,33 @@ def readSecretsJSON():
       SECRETS = readJSON(secretsPath)
 
 
-
-def aesSymmetricEncrypt(data):
+##
+# Adapted from
+# https://gist.github.com/lopes/168c9d74b988391e702aac5f4aa69e41?permalink_comment_id=2835739
+#
+# https://cryptobook.nakov.com/symmetric-key-ciphers/aes-encrypt-decrypt-examples
+# https://pycryptodome.readthedocs.io/en/latest/src/examples.html
+#
+#
+def aesSymmetricEncrypt(msgUTF8):
     aesKey = get_random_bytes(16)
 
     iv = get_random_bytes(AES.block_size)
     cipher = AES.new(aesKey, AES.MODE_CBC, iv)
 
-    # cipherText = b64encode(iv + cipher.encrypt(pad(data.encode('utf-8'), AES.block_size)))
+    cipherTextUTF8 = b64encode(iv + cipher.encrypt(pad(msgUTF8.encode('utf-8'), AES.block_size))).decode('utf-8')
 
-    cipherText = b64encode(iv + cipher.encrypt(pad(data.encode('utf-8'), AES.block_size))).decode('utf-8')
+    return cipherTextUTF8, aesKey
 
-    return cipherText, aesKey
 
-def aesSymmetricDecrypt(data, aesKey):
-    raw = b64decode(data)
+def aesSymmetricDecrypt(cipherTextUTF8, aesKey):
+    raw = b64decode(cipherTextUTF8.encode())
+
     cipher = AES.new(aesKey, AES.MODE_CBC, raw[:AES.block_size])
-    decrypted = unpad(cipher.decrypt(raw[AES.block_size:]), AES.block_size).decode('utf-8')
+    decryptedUTF8 = unpad(cipher.decrypt(raw[AES.block_size:]), AES.block_size).decode('utf-8')
 
-    return decrypted
+    return decryptedUTF8
+
 
 # https://pycryptodome.readthedocs.io/en/latest/src/examples.html
 # perform a symmetric encryption
@@ -185,7 +193,7 @@ def aesSymmetricEncrypt_(msg):
 
 # Decrypt symmetrically
 #
-# https://cryptobook.nakov.com/symmetric-key-ciphers/aes-encrypt-decrypt-examples
+# 
 #
 def aesSymmetricDecrypt_(cipherTextUTF8, aesKey):
 
@@ -222,29 +230,6 @@ def aesSymmetricDecrypt_(cipherTextUTF8, aesKey):
 # with RSA encryption.
 # https://stackoverflow.com/questions/65856980/python-rsa-message-encryption-plaintext-is-too-long
 #
-
-# def setSecret(key, value, asjson=False, asBatch=False):
-
-#   global SECRETS 
-
-#   readSecretsJSON()
-
-#   if(SECRETS == None):
-#     SECRETS = {}
-
-#   publicKeyObj = RSA.importKey(getPublicKey())
-
-#   cipherRSA = PKCS1_OAEP.new(publicKeyObj)
-
-#   mgToEncrypt = str(value) if asjson == False else json.dumps(value)
-#   bytesToEncrypt = mgToEncrypt.encode('utf-8')
-
-#   cipherText = b64encode( cipherRSA.encrypt( bytesToEncrypt ) ).decode("utf-8")
-
-#   SECRETS[key] = cipherText
-
-#   if(asBatch == False):
-#     writeSecretsJSON()
 def setSecret(key, value, asjson=False, asBatch=False):
 
   global SECRETS 
@@ -261,9 +246,6 @@ def setSecret(key, value, asjson=False, asBatch=False):
 
   #We first encrypt text symmetrically. 
   ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
-
-  print("AES Key ENCRYPT")
-  print(aesKey)
 
   readSecretsJSON()
 
@@ -319,13 +301,8 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   #Note that these are the bytes of the aes key, not the decoded utf-8 string.
   aesKey = cipherRSA.decrypt(cipherBytes) 
 
-  print("AES Key DECRYPT")
-  print(aesKey)
-
   #now that the aesKey has been decoded, we're going to decrypt the actual secret with the aes-key
   varContentsUTF8 = aesSymmetricDecrypt(cipherTextMainUTF8, aesKey)
-
-  print(f"ALEX 95483 whats this? {str(varContentsUTF8)}")
 
   #Now perform the typing/serialization
   varToReturn = None
@@ -349,48 +326,3 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
 
   return varToReturn
 
-# def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=False, ascsvlist=False):
- 
-#   global CACHED_DECRYPTED
-
-#   readSecretsJSON()
-
-#   if(CACHED_DECRYPTED == None):
-#     CACHED_DECRYPTED = {}
-
-#   cached = CACHED_DECRYPTED.get(key, None)
-
-#   if(cached != None):
-#     return cached 
-
-#   cipherText = SECRETS.get(key, None)
-
-#   if(cipherText == None):
-#     return defval
-  
-#   cipherBytes = b64decode(cipherText)
-  
-#   cipherRSA = PKCS1_OAEP.new(RSA.import_key(getPrivateKey()))
-
-#   varContentsUTF8 = cipherRSA.decrypt(cipherBytes).decode('utf-8')
-
-#   varToReturn = None
-
-#   if(asjson):
-#     varToReturn = {} if varContentsUTF8 == None or varContentsUTF8 == 'None' else json.loads(varContentsUTF8)
-#   elif(asint):
-#     varToReturn = 0 if varContentsUTF8 == None or varContentsUTF8 == 'None' else int(varContentsUTF8)
-#   elif(asfloat):
-#     varToReturn = 0 if varContentsUTF8 == None or varContentsUTF8 == 'None' else float(varContentsUTF8)
-#   elif(asbool):
-#     varToReturn = str(varContentsUTF8) == "True"
-#   elif(ascsvlist):
-#     varContentsUTF8NoNone = '' if varContentsUTF8 == None or varContentsUTF8 == 'None' else varContentsUTF8
-#     splitsky = varContentsUTF8NoNone.split(',')
-#     varToReturn = [] if splitsky == None else splitsky
-#   else:
-#     varToReturn = varContentsUTF8
-
-#   CACHED_DECRYPTED[key] = varToReturn 
-
-#   return varToReturn
