@@ -37,6 +37,27 @@ The user should have a function in Info.py which will take the old settings and 
 ## 7
 There should be a command that will reset the initialization name, that way if you don't like it you can do something else.
 
+## 8
+Need to redo the init thing so that it's -init "handle-name-here" then you fill in the settings, then it's -configure without the name of the settings.
+
+## 9
+Need to be able to overwrite or append new secrets in a batch.
+
+## 10
+Need a utility called Paths which give us all of the paths that this thing uses, and that will be broken out of the Configure.py utility. 
+
+## 11
+Need to rename the Init.py InitStage1.py
+
+## 12 
+Need to use the runModuleInVenv instead of activate with all of the different arguments.
+
+## 13
+Need to figure out how to upgrade easily.
+
+## 14
+Need to change Background.py Foreground.py to Task.py and Monitor.py
+
 
 ## Troubleshooting:
 If, upon -init, you get this error:
