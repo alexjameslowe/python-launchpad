@@ -20,7 +20,7 @@ from python_launchpad.utils.Format import isWindows
 from os import path
 import json
 from base64 import b64decode,b64encode
-import binascii
+import re
 
 
 PUBLIC_KEY = None
@@ -166,57 +166,6 @@ def aesSymmetricDecrypt(cipherTextUTF8, aesKey):
     return decryptedUTF8
 
 
-# https://pycryptodome.readthedocs.io/en/latest/src/examples.html
-# perform a symmetric encryption
-#
-def aesSymmetricEncrypt_(msg):
-  
-  bytesToEncrypt = msg.encode()
-
-  #This will give us a 128bit key.
-  aesKey = get_random_bytes(16)
-
-  cipher = AES.new(aesKey, AES.MODE_CTR)
-
-  #ciphertextHex = cipher.encrypt(bytesToEncrypt).hex()
-  #ciphertextHex = binascii.hexlify(cipher.encrypt(bytesToEncrypt)).decode('utf-8')
-
-  cipherTextBytes = cipher.encrypt(bytesToEncrypt)
-
-  cipher2 = AES.new(aesKey, AES.MODE_CTR)
-  #decrypted = cipher2.decrypt( binascii.unhexlify(ciphertextHex.encode()) )
-  decrypted = cipher2.decrypt( cipherTextBytes ).decode('utf-8')
-  print('Decrypted!!!', decrypted)
-
-  return "testing", aesKey
-
-
-# Decrypt symmetrically
-#
-# 
-#
-def aesSymmetricDecrypt_(cipherTextUTF8, aesKey):
-
-  cipher = AES.new(aesKey, AES.MODE_CTR)
-
-  #decryptedMsgUTF8 = cipher.decrypt(cipherTextUTF8.encode())
-
-  #decryptedMsgUTF8 = cipher.decrypt( bytes.fromhex(cipherTextUTF8))
-
-  #decryptedMsgUTF8 = cipher.decrypt( binascii.unhexlify(cipherTextUTF8.encode()) )
-
-  decryptedMsgUTF8 = cipher.decrypt( binascii.unhexlify(cipherTextUTF8.encode()) )
-  
-
-  print("ALEX hey what's this? ")
-  print(decryptedMsgUTF8)
-
-  hex_string = decryptedMsgUTF8 #b64decode( binascii.hexlify(decryptedMsgUTF8).decode('utf-8') )
-
-
-  return hex_string #decryptedMsgUTF8
-
-
 ##
 # Encrypt a secret
 #
@@ -239,6 +188,9 @@ def setSecret(key, value, asjson=False, asBatch=False):
     aesPosInKey = key.index(AES_SUFFIX)
   except:
     pass 
+
+  if(not re.match( r'^([A-Za-z0-9_\-]+)$', key)):
+    raise Exception(f"Key must be letters, numbers, _ or -. You passed in. {key}")
 
   #Why did the user do that? Complain.
   if(aesPosInKey != None):
