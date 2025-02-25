@@ -59,10 +59,22 @@ Need to figure out how to upgrade easily.
 Need to change Background.py Foreground.py to Task.py and Monitor.py
 
 
+## 15
+Need to format the error when there's a syntax error on the Background or Foreground.py file.
+
+## 16
+For stacktrace, figure out where to put this:
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    error_string = ''.join(lines)
+    print(error_string)
+
+
 ## Troubleshooting:
 If, upon -init, you get this error:
 UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 517: character maps to <undefined>
 It's because a microsoft smart quote has made it's way into the sourcecode.
+
 
 
 
