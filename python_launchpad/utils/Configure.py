@@ -73,6 +73,12 @@ def getPublicKeyPath():
 def getSecretsFilePath():
   return joinPath(getDataDirectory(), 'secrets.json')
 
+##
+# get the path to the project directory.
+#
+def getProjectDirectory(asObj=False):
+  return joinPath(getLaunchpadDirectory(), '..', asObj=asObj)
+
 
 ####
 # get a main setting

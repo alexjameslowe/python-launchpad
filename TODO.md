@@ -54,6 +54,14 @@ Need to use the runModuleInVenv instead of activate with all of the different ar
 
 ## 13
 Need to figure out how to upgrade easily.
+The current version will be in one of the files. 
+There's going to be an upgrade script which will: 
+
+Read the version to see if its compatible with the newest version.
+Take a backup of the main.json file from the launcher and store it in the data folder. 
+Store the version of the current one in a text file and put it in the data folder.
+Pull a copy of the python_launchpad from github. Configure it.
+The update script will also have a revert method that will restore the old version of the launchpad, which was stored in the data folder.
 
 ## 14
 Need to change Background.py Foreground.py to Task.py and Monitor.py
@@ -62,12 +70,25 @@ Need to change Background.py Foreground.py to Task.py and Monitor.py
 ## 15
 Need to format the error when there's a syntax error on the Background or Foreground.py file.
 
-## 16
+## 16 DONE. Put this in the BackgroundRunner.
 For stacktrace, figure out where to put this:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
     error_string = ''.join(lines)
     print(error_string)
+
+## 17 
+Need to have some way to reset all of the thread-safe variables.
+
+## 18 
+See def printMsg():
+
+## 19
+getVar, getSecret- these should be the same thing. getSecret is currently not thread-safe, so I should make it threadsafe. Maybe instead of a secrets.json file, it should be a directory and each secret should have its own file keyes to the name of the secret.
+
+
+## 20 
+Need easy way to list secrets. Need a -list-secrets call.
 
 
 ## Troubleshooting:

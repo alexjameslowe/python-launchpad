@@ -47,9 +47,16 @@ def removeIfExists(uriPath):
   if path.exists(uriPath):
     os.remove(uriPath)
 
+##
+# get the directory of the variables
+#
 def getVarsDirPath():
   return joinPath(getDataDirectory(), 'vars')
 
+
+##
+# create the var directory if it doesn't exist
+#
 def createVarsIfNeeded():
   varsDirPath = getVarsDirPath()
   if(not path.isdir(varsDirPath)):
@@ -61,15 +68,16 @@ def createVarsIfNeeded():
 #
 def getVarURI(varName):
   createVarsIfNeeded()
-  uri = path.normpath(path.join(SCRIPT_DIR, 'vars', f'__{varName}.txt')) 
+  uri = joinPath(getVarsDirPath(), f'__{varName}.txt')
   return uri
+
 
 ##
 # get the uri to the variable lockfile
 #
 def getVarLockURI(varName):
-  createVarsIfNeeded()
-  uri = path.normpath(path.join(SCRIPT_DIR, 'vars', f'__{varName}_lockfile.LOCK')) 
+  createVarsIfNeeded() 
+  uri = joinPath(getVarsDirPath(), f'__{varName}_lockfile.LOCK')
   return uri
 
 
