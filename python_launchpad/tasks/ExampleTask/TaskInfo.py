@@ -11,8 +11,8 @@ info = {
    #This is the argument which will select this task.
   'taskArg':'example_task',
 
-   #This is the name of the task to run. Note that there must be a Background.py and 
-   #a Foreground.py file in the task folder.
+   #This is the name of the task to run. Note that there must be a Task.py and 
+   #a Monitor.py file in the task folder.
   'taskName':'ExampleTask',
   
    #Here are the other arguments that will be present in the command-line.

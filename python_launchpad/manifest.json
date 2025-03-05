@@ -1,8 +1,8 @@
 [
-    "tasks/ExampleTask/Background.py",
-    "tasks/ExampleTask/Foreground.py",
+    "tasks/ExampleTask/Task.py",
+    "tasks/ExampleTask/Monitor.py",
     "tasks/ExampleTask/TaskInfo.py",
-    "utils/BackgroundRunner.py", 
+    "utils/TaskRunner.py", 
     "utils/Configure.py", 
     "utils/File.py", 
     "utils/Format.py", 

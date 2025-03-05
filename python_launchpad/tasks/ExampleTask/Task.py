@@ -23,7 +23,7 @@ from time import sleep
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
-from python_launchpad.utils.BackgroundRunner import startTask, gracefulExit, endTask
+from python_launchpad.utils.TaskRunner import startTask, gracefulExit, endTask
   
 #Run the report on a background processes, and gather information about what's going
 #on to the user to update the screen as we go.

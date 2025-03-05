@@ -255,7 +255,7 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         if(taskName == None):
           raise Exception("No taskName.")
 
-        module = importlib.import_module(f'{tasksModuleName}.{taskName}.Foreground')
+        module = importlib.import_module(f'{tasksModuleName}.{taskName}.Monitor')
         module.monitor()
       except Exception as err:
         print(f"Module not found: {str(err)}")
@@ -272,7 +272,7 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
       if(taskName == None):
         raise Exception("No taskName.")
 
-      module = importlib.import_module(f'{tasksModuleName}.{taskName}.Background')
+      module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
       module.task()
     except Exception as err:
       print(f"Module not found: {str(err)}")

@@ -64,13 +64,13 @@ Pull a copy of the python_launchpad from github. Configure it.
 The update script will also have a revert method that will restore the old version of the launchpad, which was stored in the data folder.
 
 ## 14
-Need to change Background.py Foreground.py to Task.py and Monitor.py
+Need to change Task.py Monitor.py to Task.py and Monitor.py
 
 
 ## 15
-Need to format the error when there's a syntax error on the Background or Foreground.py file.
+Need to format the error when there's a syntax error on the Task or Monitor.py file.
 
-## 16 DONE. Put this in the BackgroundRunner.
+## 16 DONE. Put this in the TaskRunner.
 For stacktrace, figure out where to put this:
     exc_type, exc_value, exc_traceback = sys.exc_info()
     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
