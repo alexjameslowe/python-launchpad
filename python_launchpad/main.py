@@ -36,6 +36,8 @@ def main():
   
   parser.add_argument('-for-key', help='Which key do you want to set the value for?', required=False, default=None)
   
+  parser.add_argument('-list-secrets', help='List the names of the secrets', required=False, default="0", const="1", nargs='?')
+ 
   parser.add_argument('-v', help='Get version info', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-graceful-exit', help='Do you want to exit gracefully?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
@@ -57,6 +59,7 @@ def main():
   gracefulExit = args.get('graceful_exit', None)  == "1"
   background = args.get('background', None)  == "1"
   initPfx = args.get('init', None) 
+  listSecrets = args.get('list_secrets', None) == "1"
 
   #process the arguments and see if we're supposed to launch a task.
   taskInfo = getTaskInfo(args, TASKS)
@@ -76,13 +79,13 @@ def main():
     #perform the installation and setup of the virtual environment
     #and then run the task.
     else:
-      activate(taskInfo, background=True)
+      activate(taskInfo, args=args, background=True)
   
   #Configure the program
   if(configFileURI):
     configure(configFileURI)
 
-    module = runModuleInVEnv('python_launchpad.utils.InitStage2')
+    module = runModuleInVEnv('integrator_launchpad.utils.InitStage2')
     module.init()
 
   #If we're setting a value in the profile data, then do that here.
@@ -90,13 +93,17 @@ def main():
     setProfileSetting(forKey, setValue)
 
   elif(setSecret != None and forKey != None):
-    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
     secrets.setSecret(forKey, setSecret)
 
   elif(getSecret and forKey != None):
-    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
     print(f"secret for '{forKey}': ")
     print(secrets.getSecret(forKey))
+
+  elif(listSecrets): 
+    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets.listSecrets()
 
   elif(initPfx != None):
     init(initPfx)
@@ -108,5 +115,6 @@ def main():
   
 if __name__ == "__main__":
   main()
+
 
 

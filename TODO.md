@@ -63,12 +63,13 @@ Store the version of the current one in a text file and put it in the data folde
 Pull a copy of the python_launchpad from github. Configure it.
 The update script will also have a revert method that will restore the old version of the launchpad, which was stored in the data folder.
 
-## 14
-Need to change Task.py Monitor.py to Task.py and Monitor.py
+## 14 DONE.
+Need to change Background.py Foreground.py to Task.py and Monitor.py
 
 
 ## 15
 Need to format the error when there's a syntax error on the Task or Monitor.py file.
+
 
 ## 16 DONE. Put this in the TaskRunner.
 For stacktrace, figure out where to put this:
@@ -86,10 +87,16 @@ See def printMsg():
 ## 19
 getVar, getSecret- these should be the same thing. getSecret is currently not thread-safe, so I should make it threadsafe. Maybe instead of a secrets.json file, it should be a directory and each secret should have its own file keyes to the name of the secret.
 
-
-## 20 
+## 20 DONE
 Need easy way to list secrets. Need a -list-secrets call.
 
+## 21
+Need to be able to launch subtasks. 
+
+## 22
+secrets.json needs to be broken out into its own directory and each secret is a file. This way it can also be 
+used in the getVar setVar, and the secrets can be version controlled. Also, the public-key should be in that folder
+so that it can also be version-controlled.
 
 ## Troubleshooting:
 If, upon -init, you get this error:

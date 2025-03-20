@@ -27,14 +27,14 @@ from python_launchpad.utils.TaskRunner import startTask, gracefulExit, endTask
   
 #Run the report on a background processes, and gather information about what's going
 #on to the user to update the screen as we go.
-def task():
+def task(args):
   
   startTask()
 
   try:
 
     sleep(2)
-    print("Do the hard time-consuming thing here. 0")
+    print(f"Do the hard time-consuming thing here. 0. Here's the show_this: {str(args.get('show_this', 0))}")
 
     gracefulExit("Exiting here 549382")
    

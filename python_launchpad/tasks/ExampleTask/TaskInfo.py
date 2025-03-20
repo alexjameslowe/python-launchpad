@@ -36,11 +36,16 @@ info = {
     #  
     # 2. We have the name field, which is the dash_delimited version of the argument, 
     # i.e., show_this -> -show-this on the command line.
-    
+    #
+    # 3. type is optional. it will be typed to these. If json, it will be turned into an object
+    # 4. validator is optional. If present, it will apply a validation function to the typed argument value.
+    #    The validator will return a string if there's a problem, else, None.
     { 
       'name':'show_this',
       'help':'Get the information', 
-      'default':None 
+      'default':None,
+      'type':'int', #int, float, str, json
+      'validator': lambda showThis : 'Cant be greater or equal to 99' if showThis >= 99 else None 
     }
 
   ],

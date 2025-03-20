@@ -2,6 +2,7 @@ from os import path
 from sys import path as syspath
 import subprocess
 from time import sleep
+import json
 
 from python_launchpad.utils.Configure import getDataDirectory, getPythonExecutable
 from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
@@ -75,16 +76,23 @@ def launch(args, taskInfo):
         #Else, if it's an argument that has to come with some kind of value, then we're
         #going to append both it and the value if the value is non-None.
         elif(isFlag == False and argValue != None):
+          validator = otherArg.get('validator', None) 
+          valType = otherArg.get('type','str')
+
+          if(valType == 'int'):
+            argValue = int(argValue) 
+          elif(valType == 'float'):
+            argValue = float(argValue) 
+          elif(valType == 'json'):
+            argValue = json.loads(argValue)
+
+          validationErr = validator(argValue) 
+          if(validationErr != None):
+            raise Exception(f'Validation error: {argNameFlagCase}: {validationErr}')
+
+
           subProcessArgs.append(argNameFlagCase)
           subProcessArgs.append(argValue)
-
-
-      
-    # See, we're automating this:
-    # subProcessArgs.append('-start-date')
-    # subProcessArgs.append(args.start_date)
-    # subProcessArgs.append('-end-date')
-    # subProcessArgs.append(args.end_date)
 
     # And then add this one in so that it knows that it's the background task
     # and it therefore it will actually do the report.

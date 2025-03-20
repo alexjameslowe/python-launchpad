@@ -273,7 +273,7 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         raise Exception("No taskName.")
 
       module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
-      module.task()
+      module.task(args)
     except Exception as err:
       print(f"Module not found: {str(err)}")
 

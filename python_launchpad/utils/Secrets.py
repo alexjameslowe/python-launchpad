@@ -278,3 +278,29 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
 
   return varToReturn
 
+
+
+##
+# List the secrets
+#
+#
+def listSecrets():
+  
+  global CACHED_DECRYPTED
+
+  readSecretsJSON()
+
+  sKeys = SECRETS.keys()
+
+  print("*************************")
+  print("* ")
+  print("*  Listing Secrets")
+  print("* ")
+  
+  for key in sKeys:
+    if key.find("__aes") == -1:
+      print(f"* {key}")
+
+  print("* ")
+  print("*************************")
+
