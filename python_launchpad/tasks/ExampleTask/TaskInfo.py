@@ -14,6 +14,9 @@ info = {
    #This is the name of the task to run. Note that there must be a Task.py and 
    #a Monitor.py file in the task folder.
   'taskName':'ExampleTask',
+
+   #Is this a single background task or is it a composite of several tasks?
+  'composite':False,
   
    #Here are the other arguments that will be present in the command-line.
   'args': [

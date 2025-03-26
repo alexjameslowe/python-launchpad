@@ -2,6 +2,8 @@ import sys
 from os import system, path, mkdir
 import importlib
 from hashlib import sha256
+import traceback
+from sys import path as syspath, exc_info
 
 from python_launchpad.utils.Configure import getMainSetting, getLaunchpadDirectory, getDataDirectory
 from python_launchpad.utils.Format import joinPath
@@ -9,9 +11,16 @@ from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
 from python_launchpad.Info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
-sys.path.append(path.dirname(SCRIPT_DIR))
+syspath.append(path.dirname(SCRIPT_DIR))
 
 REQUIREMENTS_HEX_DIGEST = 'REQUIREMENTS_HEX_DIGEST'
+
+
+def traceException():
+  exc_type, exc_value, exc_traceback = exc_info()
+  lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+  error_string = ''.join(lines)
+  print(error_string)
 
 
 # Handy way to test if we're in an active venv currently
@@ -193,10 +202,10 @@ def installRequirements(performInstall, hexDigest):
 # https://superuser.com/questions/671372/running-command-in-new-bash-shell-with-rcfile-and-c
 # https://stackoverflow.com/questions/6943208/activate-a-virtualenv-with-a-python-script
 #
-def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False):
+def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False, composite=False):
 
   wasVenvCreated = createVEnv()
-  tasksModuleName = 'tasks'
+  tasksModuleName = 'integrator_tasks'
 
   if(not isVenvActive()):
 
@@ -239,13 +248,13 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
   #If it's a graceful exit, then import in the GracefulExit module and
   #call gracefulExit which will allow the task to know that it's time to exit gracefully.
   if(gracefulExit):
-    module = importlib.import_module(f'python_launchpad.utils.GracefulExit')
+    module = importlib.import_module(f'integrator_launchpad.utils.GracefulExit')
     module.gracefulExit()
     
   elif(foreground):
 
     #Launch the subprocesses.
-    subprocessLauncher = importlib.import_module(f'python_launchpad.utils.SubprocessLauncher')
+    subprocessLauncher = importlib.import_module(f'integrator_launchpad.utils.SubprocessLauncher')
     launched = subprocessLauncher.launch(args, taskInfo)
 
     if(launched):
@@ -254,14 +263,16 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         taskName = taskInfo.get('taskName', None)
         if(taskName == None):
           raise Exception("No taskName.")
-
+        
         module = importlib.import_module(f'{tasksModuleName}.{taskName}.Monitor')
         module.monitor()
       except Exception as err:
-        print(f"Module not found: {str(err)}")
+        traceException()
+        print(f"Module not found: (0493873) {str(err)}")
 
 
-  elif(background):
+  #elif(background):
+  elif(background or composite):
     
     #https://github.com/mhammond/pywin32/issues/1865
     #In requirements.txt note that I've pinned the version of pywin32 to 303. Otherwise the one that gets
@@ -273,12 +284,14 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         raise Exception("No taskName.")
 
       module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
+      #ALEX-ARGS
       module.task(args)
     except Exception as err:
-      print(f"Module not found: {str(err)}")
+      traceException()
+      print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
 
   # elif(initStage2):
-  #   module = importlib.import_module(f'python_launchpad.utils.InitStage2')
+  #   module = importlib.import_module(f'integrator_launchpad.utils.InitStage2')
   #   module.init(stage2Password, stage2Handle)
 
   
