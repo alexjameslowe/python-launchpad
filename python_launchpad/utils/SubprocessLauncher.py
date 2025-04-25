@@ -1,8 +1,10 @@
 from os import path
-from sys import path as syspath
+from sys import path as syspath, exc_info
 import subprocess
 from time import sleep
 import json
+import traceback
+
 
 from python_launchpad.utils.Configure import getDataDirectory, getPythonExecutable
 from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
@@ -36,7 +38,9 @@ def launch(args, taskInfo):
     if(isRunning):
       raise Exception("There's already a report running. Please wait for it to stop.")
 
-    #TODO make this work with linux    
+    #TODO make this work with linux  
+    #ALEX-20250304
+    setVar(RUNNING, True)  
    
     #Put together arguments for the subprocess. Note that we're calling
     #the python executable from the virtual environment if a virtual environment
@@ -76,6 +80,7 @@ def launch(args, taskInfo):
         #Else, if it's an argument that has to come with some kind of value, then we're
         #going to append both it and the value if the value is non-None.
         elif(isFlag == False and argValue != None):
+
           validator = otherArg.get('validator', None) 
           valType = otherArg.get('type','str')
 
@@ -86,10 +91,9 @@ def launch(args, taskInfo):
           elif(valType == 'json'):
             argValue = json.loads(argValue)
 
-          validationErr = validator(argValue) 
+          validationErr = validator(argValue)  if validator != None else None
           if(validationErr != None):
             raise Exception(f'Validation error: {argNameFlagCase}: {validationErr}')
-
 
           subProcessArgs.append(argNameFlagCase)
           subProcessArgs.append(argValue)
@@ -105,7 +109,14 @@ def launch(args, taskInfo):
       pid = process.pid
 
   except Exception as e:
-    print(f'Error starting report: {str(e)}')
+    print(f'Error starting Task: {str(e)}')
+
+    exc_type, exc_value, exc_traceback = exc_info()
+    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    error_string = ''.join(lines)
+    print(error_string)
+    setVar(RUNNING, False)  
+
     return False
 
   setVar(PROCESS, str(pid))

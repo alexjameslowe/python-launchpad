@@ -17,7 +17,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath, isWindows
-from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
+from python_info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 #from python_launchpad.utils.VEnv import activate
 
 filePath = path.abspath(path.dirname(__file__))
@@ -73,11 +73,30 @@ def getPublicKeyPath():
 def getSecretsFilePath():
   return joinPath(getDataDirectory(), 'secrets.json')
 
+## 
+# get the path to the secrets directory
+#
+def getSecretsDirectory():
+  dir = joinPath(getProjectDirectory(), 'secrets') 
+  if(not path.isdir(dir)):
+    mkdir(dir) 
+  
+  return dir
+
+## 
+# get the path to the secrets directory
+#
+def getSecretsManifest():
+  manifestURI = joinPath(getSecretsDirectory(), 'manifest.json')
+  return manifestURI
+  
+
 ##
 # get the path to the project directory.
 #
 def getProjectDirectory(asObj=False):
   return joinPath(getLaunchpadDirectory(), '..', asObj=asObj)
+
 
 
 ####

@@ -95,7 +95,7 @@ def main():
   if(configFileURI):
     configure(configFileURI)
 
-    module = runModuleInVEnv('integrator_launchpad.utils.InitStage2')
+    module = runModuleInVEnv('python_launchpad.utils.InitStage2')
     module.init()
 
   #If we're setting a value in the profile data, then do that here.
@@ -103,16 +103,16 @@ def main():
     setProfileSetting(forKey, setValue)
 
   elif(setSecret != None and forKey != None):
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     secrets.setSecret(forKey, setSecret)
 
   elif(getSecret and forKey != None):
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     print(f"secret for '{forKey}': ")
     print(secrets.getSecret(forKey))
 
   elif(listSecrets): 
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     secrets.listSecrets()
 
   elif(initPfx != None):
@@ -203,7 +203,7 @@ def main():
   if(configFileURI):
     configure(configFileURI)
 
-    module = runModuleInVEnv('integrator_launchpad.utils.InitStage2')
+    module = runModuleInVEnv('python_launchpad.utils.InitStage2')
     module.init()
 
   #If we're setting a value in the profile data, then do that here.
@@ -211,16 +211,16 @@ def main():
     setProfileSetting(forKey, setValue)
 
   elif(setSecret != None and forKey != None):
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     secrets.setSecret(forKey, setSecret)
 
   elif(getSecret and forKey != None):
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     print(f"secret for '{forKey}': ")
     print(secrets.getSecret(forKey))
 
   elif(listSecrets): 
-    secrets = runModuleInVEnv('integrator_launchpad.utils.Secrets')
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     secrets.listSecrets()
 
   elif(initPfx != None):

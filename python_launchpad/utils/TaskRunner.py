@@ -14,14 +14,15 @@ from python_launchpad.utils.Var import setVar, rmVar, getVar, RUNNING, PROCESS, 
 
 
 
-# trace an exception
+# handle the exception
 # https://docs.python.org/3/library/http.server.html#http.server.HTTPServer
 # 
-def traceException():
+def handleException():
   exc_type, exc_value, exc_traceback = exc_info()
   lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
   error_string = ''.join(lines)
   print(error_string)
+  setVar('ERROR', error_string)
 
 
 def printMsg():
@@ -62,3 +63,4 @@ def endTask():
   #and remove the process id.
   setVar(RUNNING, False)
   rmVar(PROCESS)
+  exit()

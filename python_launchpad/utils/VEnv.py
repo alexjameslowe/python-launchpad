@@ -1,22 +1,21 @@
 import sys 
 from os import system, path, mkdir
 import importlib
-from hashlib import sha256
 import traceback
+from hashlib import sha256
 from sys import path as syspath, exc_info
 
 from python_launchpad.utils.Configure import getMainSetting, getLaunchpadDirectory, getDataDirectory
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
-from python_launchpad.Info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
+from python_info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 REQUIREMENTS_HEX_DIGEST = 'REQUIREMENTS_HEX_DIGEST'
 
-
-def traceException():
+def handleException():
   exc_type, exc_value, exc_traceback = exc_info()
   lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
   error_string = ''.join(lines)
@@ -205,7 +204,7 @@ def installRequirements(performInstall, hexDigest):
 def activate(taskInfo, gracefulExit=False, args=None, background=False, foreground=False, composite=False):
 
   wasVenvCreated = createVEnv()
-  tasksModuleName = 'integrator_tasks'
+  tasksModuleName = 'tasks'
 
   if(not isVenvActive()):
 
@@ -248,13 +247,13 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
   #If it's a graceful exit, then import in the GracefulExit module and
   #call gracefulExit which will allow the task to know that it's time to exit gracefully.
   if(gracefulExit):
-    module = importlib.import_module(f'integrator_launchpad.utils.GracefulExit')
+    module = importlib.import_module(f'python_launchpad.utils.GracefulExit')
     module.gracefulExit()
     
   elif(foreground):
 
     #Launch the subprocesses.
-    subprocessLauncher = importlib.import_module(f'integrator_launchpad.utils.SubprocessLauncher')
+    subprocessLauncher = importlib.import_module(f'python_launchpad.utils.SubprocessLauncher')
     launched = subprocessLauncher.launch(args, taskInfo)
 
     if(launched):
@@ -267,7 +266,7 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         module = importlib.import_module(f'{tasksModuleName}.{taskName}.Monitor')
         module.monitor()
       except Exception as err:
-        traceException()
+        handleException()
         print(f"Module not found: (0493873) {str(err)}")
 
 
@@ -287,11 +286,11 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
       #ALEX-ARGS
       module.task(args)
     except Exception as err:
-      traceException()
+      handleException()
       print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
 
   # elif(initStage2):
-  #   module = importlib.import_module(f'integrator_launchpad.utils.InitStage2')
+  #   module = importlib.import_module(f'python_launchpad.utils.InitStage2')
   #   module.init(stage2Password, stage2Handle)
 
   
