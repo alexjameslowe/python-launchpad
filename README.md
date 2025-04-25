@@ -46,23 +46,27 @@ Open this file up. It will look like this:
 Now, from your CLI, run the following command:
 
 ```powershell
-python3 .\python-launchpad\src\product\main.py -config ./coolproject_settings.json
+python3 coolproject.py -config
 ```
 
-It will configure your program. You can delete the coolproject_settings.json afterward.
+It will configure your program. You can delete the coolproject_settings.json afterward. Note that the virtual enviornment will start building. It will also generate a public and private key for secrets. Wait until its finished.
+
+Make sure your .gitignore contains:
+coolproject_data
+coolproject_launchpad
+__pycache__
+
 
 Next, run the example task:
 
 ```powershell
-python3 .\python-launchpad\src\product\main.py -example-task
+python3 coolproject.py -example-task
 ```
+
+## Adding new dependencies
+
+
+
 
 This will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment. In addition, any changes you make to the requirments in Info.py will be picked up and the virtual environent will be updated as needed.
 
-
-
-
-
-Remove-Item windu* -Force -Recurse; Copy-Item ..\python-launchpad\python_launchpad .\ -Recurse -Force; python3 ./python_launchpad/main.py -init windu
-
-python3 ./windu.py -config ./windu_settings.json

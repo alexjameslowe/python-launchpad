@@ -96,7 +96,7 @@ def main():
   
   #Configure the program
   if(config):
-    configFileURI = path.abspath(path.join(path.dirname(__file__), ".."), f"{PROJECT_LC_NAME}_settings.json")
+    configFileURI = path.abspath(path.join(path.dirname(__file__), "..", f"{PROJECT_LC_NAME}_settings.json"))
     configure(configFileURI)
 
     module = runModuleInVEnv('python_launchpad.utils.InitStage2')

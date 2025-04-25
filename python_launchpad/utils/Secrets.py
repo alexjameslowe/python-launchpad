@@ -137,6 +137,8 @@ def readSecretsManifestJSON():
 
     if(path.isfile(secretsManifestURI)):
       SECRETS_MANIFEST = readJSON(secretsManifestURI)
+    else:
+      SECRETS_MANIFEST = []
 
 
 ##

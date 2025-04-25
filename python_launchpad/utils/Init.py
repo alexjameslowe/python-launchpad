@@ -57,8 +57,9 @@ def init(pfx):
       raise Exception(f"Error: could not perform replacements on {file}")
 
   #Record this because we have to make more changes to the packaging
-  #when we start moving files out of the launchpad to your workspace
-  #launchpadName = f"{lcpfx}_launchpad"
+  #when we start moving files out of the launchpad to your workspace.
+  #These further replacements are below:
+  launchpadName = f"{lcpfx}_launchpad"
 
   #make the old and new locations of these files
   tasksDir = joinPath(getLaunchpadDirectory(), 'tasks')
