@@ -20,7 +20,6 @@ from python_launchpad.utils.Format import isWindows, joinPath
 from os import path
 import json
 from base64 import b64decode,b64encode
-import binascii
 import re
 
 
