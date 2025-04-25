@@ -17,8 +17,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath, isWindows
-from python_info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
-#from python_launchpad.utils.VEnv import activate
+from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 
 filePath = path.abspath(path.dirname(__file__))
 
@@ -287,7 +286,4 @@ def configure(jsonURI=None):
     print("**********************************************************")
 
   
-  # if(initStage2):
-  #   print("Initializing your virtual environment")
-  #   activate(initStage2=True, stage2Password='testing123')
 

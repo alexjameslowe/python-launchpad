@@ -8,7 +8,7 @@ from sys import path as syspath, exc_info
 from python_launchpad.utils.Configure import getMainSetting, getLaunchpadDirectory, getDataDirectory
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
-from python_info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
+from python_launchpad.Info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))

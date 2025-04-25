@@ -58,7 +58,7 @@ def init(pfx):
 
   #Record this because we have to make more changes to the packaging
   #when we start moving files out of the launchpad to your workspace
-  launchpadName = f"{lcpfx}_launchpad"
+  #launchpadName = f"{lcpfx}_launchpad"
 
   #make the old and new locations of these files
   tasksDir = joinPath(getLaunchpadDirectory(), 'tasks')

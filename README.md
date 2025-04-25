@@ -18,12 +18,12 @@ cd to your project folder.
 Make sure that the following entries are in your gitignore:
 
 python-launchpad/
-coolproject_settings.json
+<project-name-here>_settings.json
 
-The term "coolproject" is a standin for a project handle that you decide. Python Launchpad will add some files to your project directory and this handle is a convenience so that you can easily distinguish launchpad files from other things in your directory. E.g., there will be a "coolproject_info.py", "coolproject_tasks.py" etc.
+<project-name-here> is a standin for a project handle that you decide. Python Launchpad will add some files to your project directory and this handle is a convenience so that you can easily distinguish launchpad files from other things in your directory. E.g., there will be a "coolproject_info.py", "coolproject_tasks.py" etc.
 
 ```powershell
-python3 .\python-launchpad\src\product\main.py -init coolproject
+python3 .\python-launchpad\main.py -init coolproject
 ```
 
 You'll notice that some files appear, among them coolproject_settings.json.
