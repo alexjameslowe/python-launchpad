@@ -5,9 +5,9 @@ import argparse, sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from python_launchpad.utils.Configure import configure, setProfileSetting, getMainSetting, versionInfo
+from python_launchpad.utils.Configure import configure, setProfileSetting, versionInfo
 from python_launchpad.utils.VEnv import activate, runModuleInVEnv
-from python_launchpad.utils.Task import parseArgs, getTaskInfo
+from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.Init import init
 from python_launchpad.Tasks import TASKS
 
