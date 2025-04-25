@@ -139,6 +139,22 @@ def readSecretsManifestJSON():
     if(path.isfile(secretsManifestURI)):
       SECRETS_MANIFEST = readJSON(secretsManifestURI)
 
+
+##
+# write the main secrets file
+#
+def writeSecretsManifestJSON():
+  with open(getSecretsManifest(), 'w') as secretsManifestFile:
+
+    if(SECRETS_MANIFEST != None):
+      json.dump(SECRETS_MANIFEST, secretsManifestFile)
+    else:
+      secretsManifestFile.write('{}')
+
+    secretsManifestFile.close()
+
+
+
 ##
 # Adapted from
 # https://gist.github.com/lopes/168c9d74b988391e702aac5f4aa69e41?permalink_comment_id=2835739
@@ -182,8 +198,6 @@ def aesSymmetricDecrypt(cipherTextUTF8, aesKey):
 #
 def setSecret(key, value, asjson=False, asBatch=False):
 
-  global SECRETS 
-
   aesPosInKey = None
   try: 
     aesPosInKey = key.index(AES_SUFFIX)
@@ -217,6 +231,12 @@ def setSecret(key, value, asjson=False, asBatch=False):
   with open(cipherTextAESURI, 'w') as s2:
     s2.write(cipherTextUTFOfAESKey)
   s2.close()
+
+  readSecretsManifestJSON()
+
+  if not key in SECRETS_MANIFEST: 
+    SECRETS_MANIFEST.append(key)
+    writeSecretsManifestJSON()
   
 
 
