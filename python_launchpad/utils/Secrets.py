@@ -17,7 +17,7 @@ from keyring import get_password, set_password
 from python_launchpad.utils.Configure import getSecretsDirectory, getSecretsManifest, getMainSetting, getPublicKeyPath, getSecretsFilePath
 from python_launchpad.utils.Utils import readJSON
 from python_launchpad.utils.Format import isWindows, joinPath
-from os import path, mkdir
+from os import path
 import json
 from base64 import b64decode,b64encode
 import binascii
@@ -130,19 +130,6 @@ def writeSecretsJSON():
 ##
 # read the main secrets file
 #
-def readSecretsJSON():
-  global SECRETS
-  if(not SECRETS):
-
-    secretsPath = getSecretsFilePath()
-
-    if(path.isfile(secretsPath)):
-      SECRETS = readJSON(secretsPath)
-
-
-##
-# read the main secrets file
-#
 def readSecretsManifestJSON():
   global SECRETS_MANIFEST
   if(not SECRETS_MANIFEST):
@@ -213,21 +200,12 @@ def setSecret(key, value, asjson=False, asBatch=False):
   #We first encrypt text symmetrically. 
   ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
 
-  #readSecretsJSON()
-
-  #if(SECRETS == None):
-  #  SECRETS = {}
-
   publicKeyObj = RSA.importKey(getPublicKey())
 
   cipherRSA = PKCS1_OAEP.new(publicKeyObj)
 
   #Now we're going to encrypt the aes key *asymmetrically*
   cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
-
-  #Save both of these to the secrets 
-  #SECRETS[key] = ciphertextUTF8
-  #SECRETS[f"{key}{AES_SUFFIX}"] = cipherTextUTFOfAESKey
 
   cipherTextMainURI = joinPath(getSecretsDirectory(), f"{key}.txt")
   cipherTextAESURI = joinPath(getSecretsDirectory(), f"{key}{AES_SUFFIX}.txt")
@@ -240,11 +218,6 @@ def setSecret(key, value, asjson=False, asBatch=False):
     s2.write(cipherTextUTFOfAESKey)
   s2.close()
   
-  #cipherTextMainUTF8 = SECRETS.get(key, None)
-  #cipherTextAESUTF8 = SECRETS.get(f"{key}{AES_SUFFIX}", None)
-
-  # if(asBatch == False):
-  #   writeSecretsJSON()
 
 
 ##
@@ -265,6 +238,10 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   
   cipherTextMainURI = joinPath(getSecretsDirectory(), f"{key}.txt")
   cipherTextAESURI = joinPath(getSecretsDirectory(), f"{key}{AES_SUFFIX}.txt")
+
+  if(not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
+    print(f"No secret for key: {key}")
+    return 
 
   with open(cipherTextMainURI) as s1:
     cipherTextMainUTF8 = s1.read()
@@ -314,9 +291,6 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
 
 
 
-
-
-
 ##
 # List the secrets
 #
@@ -336,18 +310,3 @@ def listSecrets():
   print("*************************")
 
 
-
-
-def redoSecrets():
-  pass
-  # readSecretsJSON()
-
-  # sKeys = SECRETS.keys()
-
-  # for key in sKeys:
-  #   secret = SECRETS[key]
-  #   secretFileURI = joinPath(getSecretsDirectory(), f"{key}.txt") 
-
-  #   with open(secretFileURI, 'w') as secretsFile:
-  #     secretsFile.write(secret)
-  #     secretsFile.close()
