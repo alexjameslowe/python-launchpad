@@ -2,16 +2,12 @@ from os import path
 from sys import path as syspath, exc_info
 import traceback
 
-# import warnings
-# warnings.simplefilter(action = "ignore", category = RuntimeWarning)
-
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Var import setVar, rmVar, getVar, RUNNING, PROCESS, GRACEFUL_EXIT
-
 
 
 # handle the exception

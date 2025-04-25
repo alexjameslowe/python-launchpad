@@ -8,7 +8,6 @@
 ############################################################################
 
 from python_launchpad.utils.Format import dashCaseToFlagCase
-from python_launchpad.utils.VEnv import activate
 
 import sys
 

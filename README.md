@@ -32,18 +32,12 @@ Open this file up. It will look like this:
 
 ```json
 {
-  "main": {
-    "program_data": "C:/Users/path/to/the/folder/you/want/for/program-data", 
-    "user": "default_user"
-  },
-  "default_user": {
-    "system_python_handle":"python3",
-    "python_location_for_venv":"C:/Program Files/<The Python You Want To Use>"
-  }
+  "launchpad_handle":"postitivepay",
+  "system_python_handle":"python3",
+  "python_location_for_venv":"C:/Program Files/Python310"
 }
 ```
-
-1. "program_data": This will be the folder where you want persistent data to be stored. It's probably convenient to make this a location in your project, but if that's the case, make sure that you add it to .gitignore. Python Launchpad will make this directory for you if it doesn't already exist.
+1. The launchpad handle. This is the name of the main entry point that will will run commands against.
 
 2. "system_python_handle": This is the alias of python that your CLI session uses by default. Often this is "python" or "python3"
 

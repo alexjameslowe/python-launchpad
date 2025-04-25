@@ -1,5 +1,6 @@
 import os
 import argparse, sys
+from os import path
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -11,6 +12,7 @@ from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.Init import init
 from python_launchpad.Tasks import TASKS
 
+PROJECT_LC_NAME = 'project-name-goes-here'
 
 ########################################################################
 #
@@ -26,7 +28,7 @@ from python_launchpad.Tasks import TASKS
 def main():
     
   parser=argparse.ArgumentParser()
-  parser.add_argument('-config', help='Configure the program.', required=False, default=None)
+  parser.add_argument('-config', help='Configure the program.', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-test', help='Is this a test?', required=False, default="0", const="1", nargs='?')
   
   parser.add_argument('-set-value', help='Whats the value of the setting youd like to set?', required=False, default=None)
@@ -54,7 +56,7 @@ def main():
   getSecret = args.get('get_secret', None) == "1"
   forKey = args.get('for_key', None) 
 
-  configFileURI = args.get('config', None) 
+  config = args.get('config', None) == "1"
   version = args.get('v', None) == "1"
   gracefulExit = args.get('graceful_exit', None) == "1"
   background = args.get('background', None) == "1"
@@ -93,7 +95,8 @@ def main():
       activate(taskInfo, args=args, background=True)
   
   #Configure the program
-  if(configFileURI):
+  if(config):
+    configFileURI = path.abspath(path.join(path.dirname(__file__), ".."), f"{PROJECT_LC_NAME}_settings.json")
     configure(configFileURI)
 
     module = runModuleInVEnv('python_launchpad.utils.InitStage2')

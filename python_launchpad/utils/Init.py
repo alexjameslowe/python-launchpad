@@ -103,6 +103,7 @@ def init(pfx):
     replaceInPlace(venvUtil, f"from {launchpadName}.Info", f"from {lcpfx}_info")
     replaceInPlace(venvUtil, f"tasksModuleName = 'tasks'", f"tasksModuleName = '{lcpfx}_tasks'")
     replaceInPlace(mainFile, f"from {launchpadName}.Tasks", f'from {lcpfx}_task_list')
+    replaceInPlace(mainFile, f"project-name-goes-here", lcpfx)
 
   if(path.isfile(infoFileDest)):
     print(f"** File at {infoFileDest} already exists")
