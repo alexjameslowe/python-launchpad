@@ -15,7 +15,6 @@ syspath.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Var import setVar, getVar, ERROR, RUNNING, PROCESS, GRACEFUL_EXIT
   
-
 #Run the report on a background processes, and gather information about what's going
 #on to the user to update the screen as we go.
 def launch(args, taskInfo):
@@ -86,6 +85,7 @@ def launch(args, taskInfo):
 
           validator = otherArg.get('validator', None) 
           valType = otherArg.get('type','str')
+          originalArgVal = argValue
 
           if(valType == 'int'):
             argValue = int(argValue) 
@@ -95,15 +95,22 @@ def launch(args, taskInfo):
             argValue = json.loads(argValue)
           elif(valType == 'yyyy-mm-dd'):
             argValue = datetime.strptime(argValue, "%Y-%m-%d")
-            
+
           validationErr = validator(argValue)  if validator != None else None
           if(validationErr != None):
             raise Exception(f'Validation error: {argNameFlagCase}: {validationErr}')
 
+          argsKVP[argName] = argValue
+
+          #Reset this to a string. the argsKVP will have the full date objec for the validator
+          #But for the subprocess launcher we need to to be a string.
+          if(valType == 'yyyy-mm-dd'):
+            argValue = originalArgVal
+
           subProcessArgs.append(argNameFlagCase)
           subProcessArgs.append(argValue)
 
-          argsKVP[argName] = argValue
+  
 
     #If there's a validator attached to the info itself, then send it
     #ALL the arguments, and it will be able to do things like check to see
