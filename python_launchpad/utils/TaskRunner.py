@@ -7,7 +7,7 @@ import traceback
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
-from python_launchpad.utils.Var import setVar, rmVar, getVar, RUNNING, PROCESS, GRACEFUL_EXIT
+from python_launchpad.utils.Var import setVar, rmVar, getVar, ERROR, WARNING, RUNNING, PROCESS, GRACEFUL_EXIT
 
 
 # handle the exception
@@ -18,7 +18,7 @@ def handleException():
   lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
   error_string = ''.join(lines)
   print(error_string)
-  setVar('ERROR', error_string)
+  setVar(ERROR, error_string)
 
 
 def printMsg():
@@ -41,6 +41,10 @@ def gracefulExit(msg=""):
 # start a task. Call this at the start of your try case.
 #
 def startTask():
+
+  rmVar(ERROR)
+
+  rmVar(WARNING)
   
   #Set this to false to start with
   setVar(GRACEFUL_EXIT, False)

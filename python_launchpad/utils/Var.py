@@ -29,6 +29,8 @@ GRACEFUL_EXIT = 'GRACEFUL_EXIT'
 RUNNING = 'RUNNING'
 FILES_WRITTEN = 'FILES_WRITTEN'
 DIRS_CREATED = 'DIRS_CREATED'
+ERROR = 'ERROR'
+WARNING = 'WARNING'
 
 
 # For linux. a pity we still have these xplatform problems

@@ -37,10 +37,10 @@ The user should have a function in Info.py which will take the old settings and 
 ## 7
 There should be a command that will reset the initialization name, that way if you don't like it you can do something else.
 
-## 8
+## 8 DONE
 Need to redo the init thing so that it's -init "handle-name-here" then you fill in the settings, then it's -configure without the name of the settings.
 
-## 9
+## 9 N/A
 Need to be able to overwrite or append new secrets in a batch.
 
 ## 10
@@ -66,6 +66,12 @@ The update script will also have a revert method that will restore the old versi
 ## 14 DONE.
 Need to change Background.py Foreground.py to Task.py and Monitor.py
 
+## 15. 
+We need to have a command:
+
+-add-meta-field -public-field -field-title "My Title Here" -field-data "Stuff goes here" -for-key MY_SECRET
+
+So that we can display metadata. The public-field flag means that the metadata is safe for the public to see. Otherwise it will be encrypted
 
 ## 15
 Need to format the error when there's a syntax error on the Task or Monitor.py file.
