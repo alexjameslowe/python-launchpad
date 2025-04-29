@@ -1,6 +1,6 @@
 
-def validateArgs(args):
-  if(args.show_this == "99"):
+def validateArgs(argsObj):
+  if(argsObj["show_this"] == "99"):
     return 'No you cant pass in 99 here.'
   
   return None
@@ -17,6 +17,8 @@ info = {
 
    #Is this a single background task or is it a composite of several tasks?
   'composite':False,
+
+  'validator':validateArgs,
   
    #Here are the other arguments that will be present in the command-line.
   'args': [

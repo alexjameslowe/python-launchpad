@@ -4,7 +4,7 @@ import subprocess
 from time import sleep
 import json
 import traceback
-
+from datetime import datetime
 
 from python_launchpad.utils.Configure import getDataDirectory, getPythonExecutable
 from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
@@ -13,7 +13,7 @@ from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
-from python_launchpad.utils.Var import setVar, getVar, RUNNING, PROCESS, GRACEFUL_EXIT
+from python_launchpad.utils.Var import setVar, getVar, ERROR, RUNNING, PROCESS, GRACEFUL_EXIT
   
 
 #Run the report on a background processes, and gather information about what's going
@@ -58,6 +58,9 @@ def launch(args, taskInfo):
 
     otherArgs = taskInfo.get('args', None)
 
+    argsKVP = {}
+    fullValidator = taskInfo.get('validator', None)
+
     #If the task has other arguments that it's expecting, 
     #we're going to loop through the task-info and make sure that those
     #arguments get appended to the subprocess just how they came in through the arguments.
@@ -90,13 +93,25 @@ def launch(args, taskInfo):
             argValue = float(argValue) 
           elif(valType == 'json'):
             argValue = json.loads(argValue)
-
+          elif(valType == 'yyyy-mm-dd'):
+            argValue = datetime.strptime(argValue, "%Y-%m-%d")
+            
           validationErr = validator(argValue)  if validator != None else None
           if(validationErr != None):
             raise Exception(f'Validation error: {argNameFlagCase}: {validationErr}')
 
           subProcessArgs.append(argNameFlagCase)
           subProcessArgs.append(argValue)
+
+          argsKVP[argName] = argValue
+
+    #If there's a validator attached to the info itself, then send it
+    #ALL the arguments, and it will be able to do things like check to see
+    #if start_date is before end_date and things like that.
+    if(fullValidator):
+      errMsg = fullValidator(argsKVP)
+      if(errMsg):
+        raise Exception(f"Validation Error: {errMsg}")
 
     # And then add this one in so that it knows that it's the background task
     # and it therefore it will actually do the report.
