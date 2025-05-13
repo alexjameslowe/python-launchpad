@@ -3,7 +3,7 @@ from os import path
 import sys
 from math import isnan
 from datetime import date
-from pathlib import PureWindowsPath, PurePosixPath
+from pathlib import PureWindowsPath, PurePosixPath, Path
 
 # getting the name of the directory
 # where the this file is present.
@@ -42,7 +42,18 @@ def joinPath(*args, **kwargs):
   nPath = path.normpath(jPath)
   purePath = PureWindowsPath(nPath) if isWindows() else PurePosixPath(nPath)
   #purePath = purePath.replace(" ", "\ ") g/dd/
-  return purePath if asObj else str(purePath)#.replace(" ", "^ ")
+  joinedPath = purePath if asObj else str(purePath)#.replace(" ", "^ ")
+
+  #There's this problem where uris with " - " fail with the open()
+  #function and I can't figure out how to mitigate it. 
+  #I love how computers can make videos with prompts 
+  #but uris are still a headache.
+  # if(isWindows()):
+  #   joinedPath = joinedPath.replace(' - ',' \\- ')
+  #joinedPath = Path(joinedPath)
+
+  return joinedPath
+  #return purePath if asObj else urlparse(str(purePath)).path#.replace(" ", "^ ")
 
 
 #TODO add some error handling in here for messy strings. Currenly on the honor 

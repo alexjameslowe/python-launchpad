@@ -17,7 +17,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath, isWindows
-from Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
+from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 
 filePath = path.abspath(path.dirname(__file__))
 

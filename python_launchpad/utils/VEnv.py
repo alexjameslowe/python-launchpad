@@ -144,8 +144,9 @@ def createVEnv():
       raise Exception("Missing python_location_for_venv from settings")
   
     if(isWindows()):
-      system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" {venvPath}')
+      system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
     else:
+      raise Exception("For linux: This is a part where we have to deal with annoying things like escaping spaces.")
       system(f'{systemPython} -m virtualenv -p {pythonPath} {venvPath}')
 
     return True 
