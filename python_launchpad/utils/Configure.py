@@ -76,7 +76,7 @@ def getSecretsFilePath():
 # get the path to the secrets directory
 #
 def getSecretsDirectory():
-  dir = joinPath(getProjectDirectory(), 'secrets') 
+  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets') 
   if(not path.isdir(dir)):
     mkdir(dir) 
   

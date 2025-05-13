@@ -161,9 +161,9 @@ def installRequirements(performInstall, hexDigest):
   if(performInstall):
     refreshRequirementsFile()
 
-    res = system(f"pip install -r {getRequirementsFilePath()}")
+    res = system(f'pip install -r "{getRequirementsFilePath()}"')
     if(res != 0):
-      raise Exception('38437 pip install result was non-zero.')
+      raise Exception(f'38437 pip install result was non-zero.')
     
     setVar(REQUIREMENTS_HEX_DIGEST, hexDigest)
 

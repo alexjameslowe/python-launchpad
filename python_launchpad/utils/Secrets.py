@@ -18,6 +18,7 @@ from python_launchpad.utils.Configure import getSecretsDirectory, getSecretsMani
 from python_launchpad.utils.Utils import readJSON, randomString
 from python_launchpad.utils.Format import isWindows, joinPath
 
+
 from base64 import b64decode,b64encode
 import re
 from os import path
@@ -116,15 +117,15 @@ def generateKeys(password=None):
 ##
 # write the main secrets file
 #
-def writeSecretsJSON():
-  with open(getSecretsFilePath(), 'w') as secretsFile:
+# def writeSecretsJSON():
+#   with open(getSecretsFilePath(), 'w') as secretsFile:
 
-    if(SECRETS != None):
-      json.dump(SECRETS, secretsFile)
-    else:
-      secretsFile.write('{}')
+#     if(SECRETS != None):
+#       json.dump(SECRETS, secretsFile)
+#     else:
+#       secretsFile.write('{}')
 
-    secretsFile.close()
+#     secretsFile.close()
 
 
 #This is a function to take the manifest.json and encrypt it
@@ -171,7 +172,7 @@ def readSecretsManifestJSON():
   global SECRETS_MANIFEST
   if(not SECRETS_MANIFEST):
     SECRETS_MANIFEST = getSecret("manifest", defval=[], asjson=True, __manifest=True)
-  
+    
 
 ##
 # write the main secrets file
@@ -372,8 +373,7 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
   if(not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
-    print(f"No secret for key: {key}")
-    return 
+    return defval
 
   with open(cipherTextMainURI) as s1:
     cipherTextMainUTF8 = s1.read()

@@ -99,10 +99,12 @@ Need easy way to list secrets. Need a -list-secrets call.
 ## 21
 Need to be able to launch subtasks. 
 
-## 22
+## 22 DONE
 secrets.json needs to be broken out into its own directory and each secret is a file. This way it can also be 
 used in the getVar setVar, and the secrets can be version controlled. Also, the public-key should be in that folder
 so that it can also be version-controlled.
+
+
 
 ## Troubleshooting:
 If, upon -init, you get this error:
