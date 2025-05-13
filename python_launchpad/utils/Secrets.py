@@ -15,12 +15,13 @@ from Crypto.Util.Padding import pad, unpad
 from keyring import get_password, set_password
 
 from python_launchpad.utils.Configure import getSecretsDirectory, getSecretsManifest, getMainSetting, getPublicKeyPath, getSecretsFilePath
-from python_launchpad.utils.Utils import readJSON
+from python_launchpad.utils.Utils import readJSON, randomString
 from python_launchpad.utils.Format import isWindows, joinPath
-from os import path
-import json
+
 from base64 import b64decode,b64encode
 import re
+from os import path
+import json
 
 
 PUBLIC_KEY = None
@@ -126,33 +127,130 @@ def writeSecretsJSON():
     secretsFile.close()
 
 
+#This is a function to take the manifest.json and encrypt it
+def migrate_encryptManifestJSON():
+
+  readSecretsManifestJSON()
+
+  newManifestData = []
+
+  for secretName in SECRETS_MANIFEST:
+    random = randomString()
+    newEntry = { 'name':secretName, 'randname':random }
+    newManifestData.append(newEntry)
+  
+  newManifestFileContents = json.dumps(newManifestData)
+
+  #We first encrypt text symmetrically. 
+  ciphertextUTF8, aesKey = aesSymmetricEncrypt(newManifestFileContents)
+
+  publicKeyObj = RSA.importKey(getPublicKey())
+
+  cipherRSA = PKCS1_OAEP.new(publicKeyObj)
+
+  #Now we're going to encrypt the aes key *asymmetrically*
+  cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
+
+  cipherTextMainURI = joinPath(getSecretsDirectory(), f"manifest.txt")
+  cipherTextAESURI = joinPath(getSecretsDirectory(), f"manifest{AES_SUFFIX}.txt")
+
+  with open(cipherTextMainURI, 'w') as s1:
+    s1.write(ciphertextUTF8)
+  s1.close()
+
+  with open(cipherTextAESURI, 'w') as s2:
+    s2.write(cipherTextUTFOfAESKey)
+  s2.close()
+
+
 ##
-# read the main secrets file
+# read the main secrets file, just like we would
+# any other secret, and then update the global variable.
 #
 def readSecretsManifestJSON():
   global SECRETS_MANIFEST
   if(not SECRETS_MANIFEST):
-
-    secretsManifestURI = getSecretsManifest()
-
-    if(path.isfile(secretsManifestURI)):
-      SECRETS_MANIFEST = readJSON(secretsManifestURI)
-    else:
-      SECRETS_MANIFEST = []
-
+    SECRETS_MANIFEST = getSecret("manifest", defval=[], asjson=True, __manifest=True)
+  
 
 ##
 # write the main secrets file
 #
 def writeSecretsManifestJSON():
-  with open(getSecretsManifest(), 'w') as secretsManifestFile:
 
-    if(SECRETS_MANIFEST != None):
-      json.dump(SECRETS_MANIFEST, secretsManifestFile)
-    else:
-      secretsManifestFile.write('{}')
+  if(SECRETS_MANIFEST == None):
+    raise Exception("no SECRETS_MANIFEST exists 06950")
 
-    secretsManifestFile.close()
+  newManifestFileContents = json.dumps(SECRETS_MANIFEST)
+
+  #We first encrypt text symmetrically. 
+  ciphertextUTF8, aesKey = aesSymmetricEncrypt(newManifestFileContents)
+
+  publicKeyObj = RSA.importKey(getPublicKey())
+
+  cipherRSA = PKCS1_OAEP.new(publicKeyObj)
+
+  #Now we're going to encrypt the aes key *asymmetrically*
+  cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
+
+  cipherTextMainURI = joinPath(getSecretsDirectory(), f"manifest.txt")
+  cipherTextAESURI = joinPath(getSecretsDirectory(), f"manifest{AES_SUFFIX}.txt")
+
+  with open(cipherTextMainURI, 'w') as s1:
+    s1.write(ciphertextUTF8)
+  s1.close()
+
+  with open(cipherTextAESURI, 'w') as s2:
+    s2.write(cipherTextUTFOfAESKey)
+  s2.close()
+
+
+
+## 
+# Add a new key to the manfest file, and resave the manifest.
+# This will also update the SECRETS_MANIFEST global variable.
+# This will re-encrypt the manifest file.
+#
+def addNewKeyToManifest(key):
+  readSecretsManifestJSON()
+
+  found = False
+  for record in SECRETS_MANIFEST:
+    existingName = record["name"]
+    if(existingName == key):
+      found = True 
+
+  if(not found):
+    newRecord = {'name':key, 'randname':randomString(10)} 
+    SECRETS_MANIFEST.append(newRecord)
+    writeSecretsManifestJSON()
+  else:
+    raise Exception(f'Secret already exists for key: {key}')  
+
+
+# Get the actual name of the file from the manifest.
+#
+#
+def getFilenameForKeyFromManfest(key):
+  readSecretsManifestJSON()
+
+  randname = None
+  found = False
+
+  for record in SECRETS_MANIFEST:
+    existingName = record["name"]
+    if(existingName == key):
+      found = True 
+      randname = record["randname"]
+      break  
+
+  if(not found):
+    raise Exception(f"(034949o) No secret found for key: {key}")
+
+  if(not randname):
+    raise Exception("No randname found. It could be that the manifest file is broken or corrupted.")
+
+  return randname 
 
 
 
@@ -211,6 +309,12 @@ def setSecret(key, value, asjson=False, asBatch=False):
   #Why did the user do that? Complain.
   if(aesPosInKey != None):
     raise Exception(f"You can't have a key with the string {AES_SUFFIX}")
+  
+  #Add a new key to the manifest file and re-encrypt it.
+  addNewKeyToManifest(key)
+
+  #Get the filename that we're using
+  filename = getFilenameForKeyFromManfest(key)
 
   #We first encrypt text symmetrically. 
   ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
@@ -222,8 +326,8 @@ def setSecret(key, value, asjson=False, asBatch=False):
   #Now we're going to encrypt the aes key *asymmetrically*
   cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
 
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{key}.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{key}{AES_SUFFIX}.txt")
+  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{filename}.txt")
+  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
   with open(cipherTextMainURI, 'w') as s1:
     s1.write(ciphertextUTF8)
@@ -233,20 +337,22 @@ def setSecret(key, value, asjson=False, asBatch=False):
     s2.write(cipherTextUTFOfAESKey)
   s2.close()
 
-  readSecretsManifestJSON()
 
-  if not key in SECRETS_MANIFEST: 
-    SECRETS_MANIFEST.append(key)
-    writeSecretsManifestJSON()
-  
+
 
 
 ##
 # Decrypt a secret
 #
 #
-def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=False, ascsvlist=False):
-  
+def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat=False, ascsvlist=False, __manifest=False):
+
+  #We reuse this machinery for getting the readSecretsManifestJSON.
+  #readSecretsManifestJSON is almost the exact same code and we
+  #have the manifest flag to freeze out recursion.
+  if(__manifest == False):  
+    readSecretsManifestJSON()
+
   global CACHED_DECRYPTED
 
   if(CACHED_DECRYPTED == None):
@@ -257,8 +363,13 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   if(cached != None):
     return cached 
   
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{key}.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{key}{AES_SUFFIX}.txt")
+  #The manifest pairs the actual friendly and presumable somewhat sensitive
+  #name of the secret with the random name.
+  #If this is the manfest itself, then the filename is just 'manifest'
+  filename = getFilenameForKeyFromManfest(key) if(__manifest == False) else key
+  
+  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{filename}.txt")
+  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
   if(not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
     print(f"No secret for key: {key}")
@@ -317,6 +428,13 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
 #
 #
 def listSecrets():
+
+  # print("*************************")
+  # # print("MIGRATING SECRETS.JSON TO NEW FORMAT")
+  # # migrate_encryptManifestJSON()
+  # readSecretsManifestJSON()
+  # print("OK here's the SECRETS_MANIFEST:")
+  # print(json.dumps(SECRETS_MANIFEST, indent=4))
   
   readSecretsManifestJSON()
   print("*************************")
@@ -324,8 +442,8 @@ def listSecrets():
   print("*  Listing Secrets")
   print("* ")
 
-  for secretName in SECRETS_MANIFEST: 
-    print(f"* {secretName}")
+  for secretRecord in SECRETS_MANIFEST: 
+    print(f"* {secretRecord['name']} {secretRecord['randname']}")
   
   print("* ")
   print("*************************")

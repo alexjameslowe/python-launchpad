@@ -2,7 +2,10 @@ import sys
 from os import path
 import json
 import re
-import traceback
+import datetime 
+import random 
+import string
+
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
@@ -12,6 +15,18 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 #https://stackoverflow.com/questions/16807011/python-how-to-identify-if-a-variable-is-an-array-or-a-scalar
 def isArray(value):
   return hasattr(value, '__len__') and (not isinstance(value, str))
+
+
+#Get a random string with a date-string prepended so collision chances go to zero
+#unless you're using this a million times a second and you get really unlucky.
+def randomString(length=8):
+  """Generates a random string that incorporates the current date."""
+  now = datetime.datetime.now()
+  date_string = now.strftime("%Y%m%d%H%M%S")  # Format: YYYYMMDDHHMMSS
+  random_part = ''.join(random.choices(string.ascii_letters + string.digits, k=length))  # 8 random characters
+  return f"{date_string}-{random_part}"
+
+
 
 
 # Read a JSON file

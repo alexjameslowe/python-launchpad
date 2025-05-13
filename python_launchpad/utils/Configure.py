@@ -17,7 +17,7 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
 from python_launchpad.utils.Format import joinPath, isWindows
-from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
+from Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 
 filePath = path.abspath(path.dirname(__file__))
 
@@ -64,7 +64,7 @@ def getLaunchpadDirectory(asObj=False):
 # get the path to the public key
 #
 def getPublicKeyPath():
-  return joinPath(getDataDirectory(), 'public_key.txt')
+  return joinPath(getSecretsDirectory(), 'public_key.txt')
 
 ##
 # get the path to the secrets file where all of the secrets are stored.
