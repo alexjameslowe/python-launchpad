@@ -10,6 +10,7 @@ from python_launchpad.utils.Configure import configure, setProfileSetting, versi
 from python_launchpad.utils.VEnv import activate, runModuleInVEnv
 from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.InitStage1 import init
+from python_launchpad.utils.Upgrade import upgrade
 from python_launchpad.Tasks import TASKS
 
 PROJECT_LC_NAME = 'project-name-goes-here'
@@ -44,7 +45,8 @@ def main():
   parser.add_argument('-graceful-exit', help='Do you want to exit gracefully?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
 
-  parser.add_argument('-init', help='Run the report in the background as a subprocess.', required=False, default=None)
+  parser.add_argument('-init', help='Initialize the project', required=False, default=None)
+  parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default=None)
 
   #This will add arguments for the different tasks
   parseArgs(parser, TASKS)
@@ -60,7 +62,8 @@ def main():
   version = args.get('v', None) == "1"
   gracefulExit = args.get('graceful_exit', None) == "1"
   background = args.get('background', None) == "1"
-  initPfx = args.get('init', None) 
+  initProjectHandle = args.get('init', None) 
+  upgradeProjectHandle = args.get('upgrade', None)
   listSecrets = args.get('list_secrets', None) == "1"
 
   taskInfo = None
@@ -119,8 +122,11 @@ def main():
     secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
     secrets.listSecrets()
 
-  elif(initPfx != None):
-    init(initPfx)
+  elif(initProjectHandle != None):
+    init(initProjectHandle)
+
+  elif(upgradeProjectHandle != None):
+    upgrade(upgradeProjectHandle)
     
   elif(version):
     versionInfo()

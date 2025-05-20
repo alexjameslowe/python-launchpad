@@ -34,6 +34,9 @@ def printMsg():
 #
 def gracefulExit(msg=""):  
   if(getVar(GRACEFUL_EXIT, asbool=True)):
+    setVar(RUNNING, False)
+    rmVar(ERROR)
+    rmVar(WARNING)
     raise Exception(f"Graceful exiting {msg}")
   
 
@@ -43,7 +46,6 @@ def gracefulExit(msg=""):
 def startTask():
 
   rmVar(ERROR)
-
   rmVar(WARNING)
   
   #Set this to false to start with
@@ -63,4 +65,5 @@ def endTask():
   #and remove the process id.
   setVar(RUNNING, False)
   rmVar(PROCESS)
+  rmVar(WARNING)
   exit()

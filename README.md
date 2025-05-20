@@ -70,3 +70,6 @@ python3 coolproject.py -example-task
 
 This will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment. In addition, any changes you make to the requirments in Info.py will be picked up and the virtual environent will be updated as needed.
 
+
+Add this for the Long Path instructions for Windows. 
+https://github.com/maljefairi/Windows-Long-Path

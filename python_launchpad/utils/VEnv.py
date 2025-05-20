@@ -5,8 +5,8 @@ import traceback
 from hashlib import sha256
 from sys import path as syspath, exc_info
 
-from python_launchpad.utils.Configure import getMainSetting, getDataDirectory
-from python_launchpad.utils.Format import joinPath, getEnvironmentLevel0, getEnvironmentLevel1
+from python_launchpad.utils.Configure import getMainSetting, getDataDirectory, getEnvironmentLevels, getVEnvName, getVenvPath
+from python_launchpad.utils.Format import joinPath
 from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
 from python_launchpad.Info import REQUIREMENTS, BASE_REQUIREMENTS
 
@@ -26,18 +26,11 @@ def handleException():
 def isVenvActive():
   return sys.prefix != sys.base_prefix
 
+
 #Have to repeat this here because it doesn't like to do circular imports between Env and Format
 def isWindows():
   name = sys.platform.lower()
   return name.startswith('win')
-
-
-# get both enviornment levels
-#
-def getEnvironmentLevels():
-  level0 = getEnvironmentLevel0() 
-  level1 = getEnvironmentLevel1()
-  return level0, level1
 
 
 # get the name of the file where the hex digest for the
@@ -48,19 +41,10 @@ def requirementsHexDigestVarName():
   return f'{level0}_{level1}_requirments_hex_digest'
 
 
-# Get the name of the venv which depends on the 
-# level0 (base environment) and level1 (type of environment)
-#
-def getVEnvName():
-  venvName = f"venv_{getEnvironmentLevel0()}_{getEnvironmentLevel1()}"
-  return venvName
-
-
 # Get the path to the requirements file.
 #
 def getRequirementsFilePath():
-  level0 = getEnvironmentLevel0() 
-  level1 = getEnvironmentLevel1()
+  level0, level1 = getEnvironmentLevels()
   return joinPath(getDataDirectory(), f'{level0}_{level1}_requirements.txt')
 
 
@@ -142,13 +126,6 @@ def doWeNeedToPerformPipInstall():
     return performInstall, None
   
 
-def getVenvPath():
-  dataDirectory = getDataDirectory()
-  venvName = getVEnvName()
-  venvPath = joinPath(dataDirectory, venvName)
-
-  return venvPath  
-
 
 #Create the virtual environment if one doesn't already exist.
 def createVEnv():
@@ -159,14 +136,20 @@ def createVEnv():
 
     pythonPath = getMainSetting("python_location_for_venv", environmental=True)
     systemPython = getMainSetting("system_python_handle", environmental=True)
+    level0, level1 = getEnvironmentLevels()
 
     if(not pythonPath):
-      raise Exception(f"Missing python_location_for_venv from settings. Env level0 = {getEnvironmentLevel0()}, Env level1 = {getEnvironmentLevel1()}")
+      raise Exception(f"Missing python_location_for_venv from settings. Env level0 = {level0}, Env level1 = {level1}")
   
+    status = None
     if(isWindows()):
-      system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
+      status = system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
     else:
-      system(f'{systemPython} -m virtualenv -p "{pythonPath}" "{venvPath}"')
+      status = system(f'{systemPython} -m virtualenv -p "{pythonPath}" "{venvPath}"')
+
+    if(status != 0):
+      extra = " I've seen this failure happen on windows machines where Long Path Enabled is false. Google 'Windows enable long paths.'" if isWindows() else ""
+      raise Exception(f"Creation of virtual environment failed.{extra}")
 
     return True 
   
@@ -213,12 +196,8 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
   if(not isVenvActive()):
 
     venvPath = getVenvPath()
-
-    performInstall = None
-    hexDigest = None
     
-    if(not wasVenvCreated):
-      performInstall, hexDigest = doWeNeedToPerformPipInstall()
+    performInstall, hexDigest = doWeNeedToPerformPipInstall()
 
     # https://www.a2hosting.com/kb/developer-corner/python/activating-a-python-virtual-environment-from-a-script-file
     # here's how we activate the virtual environment programmatically.

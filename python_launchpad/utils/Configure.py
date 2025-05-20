@@ -16,10 +16,16 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
-from python_launchpad.utils.Format import joinPath, isWindows, getEnvironmentLevel0, getEnvironmentLevel1
-from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
+from python_launchpad.utils.Format import joinPath, isWindows
+from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR, RESOLVE_LINUX_ENVIRONMENT, RESOLVE_MAC_ENVIRONMENT, RESOLVE_WINDOWS_ENVIRONMENT
+
+from sys import platform
 
 filePath = path.abspath(path.dirname(__file__))
+
+ENV_WINDOWS = 'windows'
+ENV_LINUX = 'linux'
+ENV_MAC = 'mac'
 
 mainJSONDataObj = None
 profileJSONDataObj = None
@@ -52,6 +58,52 @@ def readProfileJSON():
 
     if(path.isfile(profileJSONPath)):
       profileJSONDataObj = readJSON(profileJSONPath)
+
+
+#get the base environment, which is either
+#windows, mac or linux.
+def getEnvironmentLevel0():
+  name = platform.lower() 
+  level0 = None
+  if(name.startswith("win")):
+    level0 = ENV_WINDOWS
+  elif(name == "darwin"):
+    level0 = ENV_MAC
+  else:
+    level0 = ENV_LINUX
+
+  if(not level0):
+    raise Exception(f"I don't know what kind of environment this is. Here's the platform string: {name}")
+  
+  return level0 
+
+
+#From the level0 environment type, get the level1 type.
+#These two types will be used to resolve dependencies 
+#and figure out which virtual enviornment we're supposed to be
+#using.
+def getEnvironmentLevel1():
+  level0 = getEnvironmentLevel0()
+  level1 = None
+  if(level0 == ENV_WINDOWS):
+    level1 = RESOLVE_WINDOWS_ENVIRONMENT()
+  elif(level0 == ENV_MAC):
+    level1 = RESOLVE_MAC_ENVIRONMENT()
+  elif(level0 == ENV_LINUX):
+    level1 = RESOLVE_LINUX_ENVIRONMENT() 
+  
+  if(not level1):
+    raise Exception(f"I was not able to find a level-1 environment type for this {level0} environment, i.e., I know that maybe its a linux environment but I don't know WHICH linux.")
+
+  return level1
+
+
+# get both enviornment levels
+#
+def getEnvironmentLevels():
+  level0 = getEnvironmentLevel0() 
+  level1 = getEnvironmentLevel1()
+  return level0, level1
 
 
 ###
@@ -184,11 +236,13 @@ def getMain():
   return joinPath(SCRIPT_DIR, '..', 'main.json')
   
 
-# Get the name of the venv which depends on the platform and the product
+# Get the name of the venv which depends on the 
+# level0 (base environment) and level1 (type of environment)
 #
 def getVEnvName():
-  name = 'wenv' if isWindows() else 'lenv'
-  return f"{name}"
+  venvName = f"venv_{getEnvironmentLevel0()}_{getEnvironmentLevel1()}"
+  return venvName
+
 
 ##
 # Get the path to the venv
@@ -236,9 +290,6 @@ def setProfileSetting(key, value):
 def getProfileSetting(key, _default=None):
   readProfileJSON()
   return profileJSONDataObj.get(key, _default)
-
-
-
 
 
 ####

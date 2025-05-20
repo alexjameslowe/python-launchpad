@@ -10,6 +10,7 @@
 import sys 
 from os import path, mkdir
 from python_launchpad.utils.Format import joinPath
+from python_launchpad.utils.Configure import getDataDirectory
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
@@ -17,11 +18,15 @@ sys.path.append(path.dirname(SCRIPT_DIR))
 
 def getVarURI(varName):
   createVarsIfNeeded()
-  uri = joinPath(SCRIPT_DIR, 'vars', f'--{varName}.txt')
+  uri = joinPath(getVarsDirPath(), f'--{varName}.txt')
   return uri
 
+##
+# get the directory of the variables
+#
 def getVarsDirPath():
-  return joinPath(SCRIPT_DIR, 'vars')
+  return joinPath(getDataDirectory(), 'vars')
+
 
 def createVarsIfNeeded():
   varsDirPath = getVarsDirPath()
