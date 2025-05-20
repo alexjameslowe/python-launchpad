@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from python_launchpad.utils.Configure import configure, setProfileSetting, versionInfo
 from python_launchpad.utils.VEnv import activate, runModuleInVEnv
 from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
-from python_launchpad.utils.Init import init
+from python_launchpad.utils.InitStage1 import init
 from python_launchpad.Tasks import TASKS
 
 PROJECT_LC_NAME = 'project-name-goes-here'

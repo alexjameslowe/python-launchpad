@@ -10,7 +10,7 @@ from sys import path as syspath
 from python_launchpad.utils.Format import joinPath
 from os import path, remove, mkdir
 from shutil import move
-from python_launchpad.utils.Configure import getLaunchpadDirectory
+from python_launchpad.utils.Configure import getLaunchpadDirectory, getSecretsDirectory, getSecretFilesIn, getSecretFilesOut
 from python_launchpad.utils.File import replaceInFile, replaceInPlace
 from python_launchpad.utils.Utils import readJSON
 
@@ -132,6 +132,11 @@ def init(pfx):
     print(f"** This is for configuring your project for the first time")
     print("** ")
     move(settingsFile, settingsFileDest)
+
+  print("** Making secrets directories")
+  getSecretsDirectory()
+  getSecretFilesIn()
+  getSecretFilesOut()
 
   #Now we're going to rename the launchpad to the new name e.g. "myproj_launchpad"
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])

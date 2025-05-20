@@ -4,6 +4,7 @@ import sys
 from math import isnan
 from datetime import date
 from pathlib import PureWindowsPath, PurePosixPath, Path
+from python_launchpad.Info import RESOLVE_LINUX_ENVIRONMENT, RESOLVE_MAC_ENVIRONMENT, RESOLVE_WINDOWS_ENVIRONMENT
 
 # getting the name of the directory
 # where the this file is present.
@@ -26,10 +27,51 @@ sys.path.append(parent)
 
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
+ENV_WINDOWS = 'windows'
+ENV_LINUX = 'linux'
+ENV_MAC = 'mac'
+
 #Have to repeat this here because it doesn't like to do circular imports between Env and Format
 def isWindows():
   name = platform.lower()
   return name.startswith('win')
+
+#get the base environment, which is either
+#windows, mac or linux.
+def getEnvironmentLevel0():
+  name = platform.lower() 
+  level0 = None
+  if(name.startswith("win")):
+    level0 = ENV_WINDOWS
+  elif(name == "darwin"):
+    level0 = ENV_MAC
+  else:
+    level0 = ENV_LINUX
+
+  if(not level0):
+    raise Exception(f"I don't know what kind of environment this is. Here's the platform string: {name}")
+  
+  return level0 
+
+
+#From the level0 environment type, get the level1 type.
+#These two types will be used to resolve dependencies 
+#and figure out which virtual enviornment we're supposed to be
+#using.
+def getEnvironmentLevel1():
+  level0 = getEnvironmentLevel0 
+  level1 = None
+  if(level0 == ENV_WINDOWS):
+    level1 = RESOLVE_WINDOWS_ENVIRONMENT()
+  elif(level1 == ENV_MAC):
+    level1 = RESOLVE_MAC_ENVIRONMENT()
+  elif(level1 == ENV_LINUX):
+    level1 = RESOLVE_LINUX_ENVIRONMENT() 
+  
+  if(not level1):
+    raise Exception(f"I was not able to find a level-1 environment type for this {level0} environment, i.e., I know that maybe its a linux environment but I don't know WHICH linux.")
+
+  return level1
 
 
 # join path, norm it, and convert it to windows slashes if we're on windows.

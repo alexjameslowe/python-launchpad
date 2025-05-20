@@ -5,15 +5,14 @@ import traceback
 from hashlib import sha256
 from sys import path as syspath, exc_info
 
-from python_launchpad.utils.Configure import getMainSetting, getLaunchpadDirectory, getDataDirectory
-from python_launchpad.utils.Format import joinPath
+from python_launchpad.utils.Configure import getMainSetting, getDataDirectory
+from python_launchpad.utils.Format import joinPath, getEnvironmentLevel0, getEnvironmentLevel1
 from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
-from python_launchpad.Info import WIN_REQUIREMENTS, LIN_REQUIREMENTS, BASE_WIN_REQUIREMENTS, BASE_LIN_REQUIREMENTS, PRODUCT_NAME
+from python_launchpad.Info import REQUIREMENTS, BASE_REQUIREMENTS
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
-REQUIREMENTS_HEX_DIGEST = 'REQUIREMENTS_HEX_DIGEST'
 
 def handleException():
   exc_type, exc_value, exc_traceback = exc_info()
@@ -33,30 +32,52 @@ def isWindows():
   return name.startswith('win')
 
 
-# Get the name of the venv which depends on the platform and the product
+# get both enviornment levels
+#
+def getEnvironmentLevels():
+  level0 = getEnvironmentLevel0() 
+  level1 = getEnvironmentLevel1()
+  return level0, level1
+
+
+# get the name of the file where the hex digest for the
+# environment-specific requirements of this script is stored. 
+#
+def requirementsHexDigestVarName():
+  level0, level1 = getEnvironmentLevels() 
+  return f'{level0}_{level1}_requirments_hex_digest'
+
+
+# Get the name of the venv which depends on the 
+# level0 (base environment) and level1 (type of environment)
 #
 def getVEnvName():
-  name = 'wenv' if isWindows() else 'lenv'
-  return f"{name}"
+  venvName = f"venv_{getEnvironmentLevel0()}_{getEnvironmentLevel1()}"
+  return venvName
 
 
 # Get the path to the requirements file.
 #
 def getRequirementsFilePath():
-  return joinPath(getDataDirectory(), 'requirements.txt')
+  level0 = getEnvironmentLevel0() 
+  level1 = getEnvironmentLevel1()
+  return joinPath(getDataDirectory(), f'{level0}_{level1}_requirements.txt')
 
 
 
-# Get the requirements list based upon the platform.
+# Get the requirements list based upon the environment type
 #
 def getRequirementList():
   requirementList = None 
-  if(isWindows()):
-    requirementList = WIN_REQUIREMENTS + BASE_WIN_REQUIREMENTS
-  else:
-    requirementList = LIN_REQUIREMENTS + BASE_LIN_REQUIREMENTS
+  level0, level1 = getEnvironmentLevels()
+
+  projectRequirements = REQUIREMENTS[level0][level1]
+  baseRequirements = BASE_REQUIREMENTS[level0][level1]
+  
+  requirementList = projectRequirements + baseRequirements
 
   return requirementList
+
 
 
 # Get the requirements list, sort it and hash it
@@ -95,12 +116,12 @@ def refreshRequirementsFile():
 # If this returns None, then we don't need to do the pip install.
 # If it's not none, then we DO need to perform a pip install, and in addition
 # the return value will be a new hex-digest of the requirements file that has
-# to get saved in the REQUIREMENTS_HEX_DIGEST disk variable in the event that
+# to get saved in the requirementsHexDigestVarName() disk variable in the event that
 # the installation completes successfully.
 #
 def doWeNeedToPerformPipInstall(): 
 
-  if(not isVar(REQUIREMENTS_HEX_DIGEST)):
+  if(not isVar(requirementsHexDigestVarName())):
 
     hexDigest = getRequirementsFileHexHash()
 
@@ -109,7 +130,7 @@ def doWeNeedToPerformPipInstall():
   
   else:
 
-    prevHexDigest = getVar(REQUIREMENTS_HEX_DIGEST)
+    prevHexDigest = getVar(requirementsHexDigestVarName())
 
     hexDigest = getRequirementsFileHexHash()
     performInstall = False
@@ -123,7 +144,6 @@ def doWeNeedToPerformPipInstall():
 
 def getVenvPath():
   dataDirectory = getDataDirectory()
-  #projectRoot = getLaunchpadDirectory()
   venvName = getVEnvName()
   venvPath = joinPath(dataDirectory, venvName)
 
@@ -137,17 +157,16 @@ def createVEnv():
 
   if(not path.isdir(venvPath)):
 
-    pythonPath = getMainSetting("python_location_for_venv")
-    systemPython = getMainSetting("system_python_handle")
+    pythonPath = getMainSetting("python_location_for_venv", environmental=True)
+    systemPython = getMainSetting("system_python_handle", environmental=True)
 
     if(not pythonPath):
-      raise Exception("Missing python_location_for_venv from settings")
+      raise Exception(f"Missing python_location_for_venv from settings. Env level0 = {getEnvironmentLevel0()}, Env level1 = {getEnvironmentLevel1()}")
   
     if(isWindows()):
       system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
     else:
-      raise Exception("For linux: This is a part where we have to deal with annoying things like escaping spaces.")
-      system(f'{systemPython} -m virtualenv -p {pythonPath} {venvPath}')
+      system(f'{systemPython} -m virtualenv -p "{pythonPath}" "{venvPath}"')
 
     return True 
   
@@ -165,24 +184,8 @@ def installRequirements(performInstall, hexDigest):
     if(res != 0):
       raise Exception(f'38437 pip install result was non-zero.')
     
-    setVar(REQUIREMENTS_HEX_DIGEST, hexDigest)
+    setVar(requirementsHexDigestVarName(), hexDigest)
 
-
-# Do this for the virtual environment during the init proicess.
-#
-#
-# def initVEnv():
-#   wasVenvCreated = createVEnv()
-
-#   if(not isVenvActive()):
-
-#     performInstall = None
-#     hexDigest = None
-    
-#     if(not wasVenvCreated):
-#       performInstall, hexDigest = doWeNeedToPerformPipInstall()
-
-#       installRequirements(performInstall, hexDigest)
 
 
 # Activate the linux or windows virtual environment

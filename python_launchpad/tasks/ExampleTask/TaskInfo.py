@@ -49,7 +49,7 @@ info = {
       'name':'show_this',
       'help':'Get the information', 
       'default':None,
-      'type':'int', #int, float, str, json
+      'type':'int', #int, float, str, json, yyyy-mm-dd
       'validator': lambda showThis : 'Cant be greater or equal to 99' if showThis >= 99 else None 
     }
 

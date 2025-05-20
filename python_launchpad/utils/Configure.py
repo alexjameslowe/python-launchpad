@@ -16,7 +16,7 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
-from python_launchpad.utils.Format import joinPath, isWindows
+from python_launchpad.utils.Format import joinPath, isWindows, getEnvironmentLevel0, getEnvironmentLevel1
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR
 
 filePath = path.abspath(path.dirname(__file__))
@@ -66,21 +66,36 @@ def getLaunchpadDirectory(asObj=False):
 def getPublicKeyPath():
   return joinPath(getSecretsDirectory(), 'public_key.txt')
 
-##
-# get the path to the secrets file where all of the secrets are stored.
-#
-def getSecretsFilePath():
-  return joinPath(getDataDirectory(), 'secrets.json')
-
 ## 
 # get the path to the secrets directory
 #
 def getSecretsDirectory():
-  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets') 
+  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'encrypted') 
   if(not path.isdir(dir)):
     mkdir(dir) 
   
   return dir
+
+## 
+# get the path to the secret files input directory
+#
+def getSecretFilesIn():
+  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'files_in') 
+  if(not path.isdir(dir)):
+    mkdir(dir) 
+  
+  return dir
+
+## 
+# get the path to the secret files output directory
+#
+def getSecretFilesOut():
+  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'files_out') 
+  if(not path.isdir(dir)):
+    mkdir(dir) 
+  
+  return dir
+
 
 ## 
 # get the path to the secrets directory
@@ -102,14 +117,30 @@ def getProjectDirectory(asObj=False):
 # get a main setting
 #
 #
-def getMainSetting(key):
+def getMainSetting(key, environmental=False):
   readMainJSON()
-  setting = mainJSONDataObj.get(key, None)
-  if(setting == None):
-    raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
-  else:
-    return setting
+
+  #just read the top-level settings if it's not from
+  #the environmental data
+  if(not environmental):
+    setting = mainJSONDataObj.get(key, None)
+    if(setting == None):
+      raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
+    else:
+      return setting 
   
+  #else, if its specific to the environment, then we're
+  #going to get the level0 and level1 environment types
+  #and dig into the settings to find the information.
+  else: 
+    level0 = getEnvironmentLevel0() 
+    level1 = getEnvironmentLevel1()
+    specific = mainJSONDataObj[level0][level1]
+    setting = specific.get(key, None) 
+    if(setting == None):
+      raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
+    else: 
+      return setting
 
 ####
 # set a main setting

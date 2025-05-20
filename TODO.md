@@ -104,12 +104,68 @@ secrets.json needs to be broken out into its own directory and each secret is a 
 used in the getVar setVar, and the secrets can be version controlled. Also, the public-key should be in that folder
 so that it can also be version-controlled.
 
+## 23 
+There's some places where we're concatenating string for system commands e.g. pip install and we're wrapping uris with quotes. We should make sure that the quotes that the uris contain are escaped.
 
+## 24
+It should make a gitignore if there isn't one and add,
+__pycache__
+optibus_data
+optibus_launchpad
+Or else if there is one, then in the initalization it should say "hey add these to your gitignore"
+
+## 25
+There should be an easy way to pull down a project from git and get it going with a copy of the python_launchpad. main.py -existing the-cool-project and it takes care of everything.
+
+## 26 
+Possible switch to MODE_EAX instead of MODE_CBC
+AI Overview
+Learn more
+In most modern applications, MODE_EAX is generally considered better than MODE_CBC due to its built-in authentication and integrity checks. While CBC (Cipher Block Chaining) is a widely used block cipher mode, EAX (Galois/Counter Mode) provides both confidentiality and data integrity, making it more secure in scenarios where data authentication is crucial. 
+Here's a more detailed comparison:
+MODE_EAX (Galois/Counter Mode): 
 
 ## Troubleshooting:
 If, upon -init, you get this error:
 UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 517: character maps to <undefined>
 It's because a microsoft smart quote has made it's way into the sourcecode.
+
+
+
+```python
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+import os
+
+def encrypt_png(key, filename):
+    chunk_size = 64 * 1024
+    output_filename = filename + ".enc"
+    file_size = os.path.getsize(filename)
+    iv = get_random_bytes(16)
+
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+
+    with open(filename, 'rb') as infile:
+        with open(output_filename, 'wb') as outfile:
+            outfile.write(file_size.to_bytes(16, 'big'))
+            outfile.write(iv)
+
+            while True:
+                chunk = infile.read(chunk_size)
+                if len(chunk) == 0:
+                    break
+                elif len(chunk) % 16 != 0:
+                    chunk += b' ' * (16 - len(chunk) % 16)
+
+                outfile.write(cipher.encrypt(chunk))
+    print(f"Encrypted file saved as: {output_filename}")
+
+# Example Usage
+key = b'Sixteen byte key'  # Key should be 16, 24, or 32 bytes long
+filename = "image.png"
+
+encrypt_png(key, filename)
+```
 
 
 

@@ -1,5 +1,25 @@
 {
   "launchpad_handle":"python_launchpad",
-  "system_python_handle":"python3",
-  "python_location_for_venv":"C:/Program Files/Python310"
+  "windows": {
+    "windows": {
+      "system_python_handle":"python3",
+      "python_location_for_venv":"C:/Program Files/Python310"
+    }
+  },
+  "linux": {
+    "wsl2": {
+      "system_python_handle":"python3",
+      "python_location_for_venv":"/mnt/c/Program Files/Python310"
+    }, 
+    "ubuntu": {
+      "system_python_handle":"python3",
+      "python_location_for_venv":"/python310/location/goes/here"
+    }
+  },
+  "mac": {
+    "mac": {
+      "system_python_handle":"python3",
+      "python_location_for_venv":"/python310/location/goes/here"
+    }
+  }
 }

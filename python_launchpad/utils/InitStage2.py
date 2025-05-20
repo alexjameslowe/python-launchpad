@@ -10,7 +10,6 @@
 
 
 from python_launchpad.utils.Secrets import generateKeys
-from python_launchpad.utils.Configure import getMainSetting
 
 def init():
 

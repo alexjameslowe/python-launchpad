@@ -14,7 +14,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from keyring import get_password, set_password
 
-from python_launchpad.utils.Configure import getSecretsDirectory, getSecretsManifest, getMainSetting, getPublicKeyPath, getSecretsFilePath
+from python_launchpad.utils.Configure import getSecretsDirectory, getMainSetting, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut
 from python_launchpad.utils.Utils import readJSON, randomString
 from python_launchpad.utils.Format import isWindows, joinPath
 
@@ -114,19 +114,6 @@ def generateKeys(password=None):
   writePublicKey(PUBLIC_KEY)
 
 
-##
-# write the main secrets file
-#
-# def writeSecretsJSON():
-#   with open(getSecretsFilePath(), 'w') as secretsFile:
-
-#     if(SECRETS != None):
-#       json.dump(SECRETS, secretsFile)
-#     else:
-#       secretsFile.write('{}')
-
-#     secretsFile.close()
-
 
 #This is a function to take the manifest.json and encrypt it
 def migrate_encryptManifestJSON():
@@ -212,7 +199,7 @@ def writeSecretsManifestJSON():
 # This will also update the SECRETS_MANIFEST global variable.
 # This will re-encrypt the manifest file.
 #
-def addNewKeyToManifest(key):
+def addNewPrivateSecretNameToManifest(key):
   readSecretsManifestJSON()
 
   found = False
@@ -232,7 +219,7 @@ def addNewKeyToManifest(key):
 # Get the actual name of the file from the manifest.
 #
 #
-def getFilenameForKeyFromManfest(key):
+def getPublicSecretName(key):
   readSecretsManifestJSON()
 
   randname = None
@@ -283,6 +270,74 @@ def aesSymmetricDecrypt(cipherTextUTF8, aesKey):
     return decryptedUTF8
 
 
+# Adapted from some chat outputs and stackoverflow. 
+# The privateSecretName is the name of the file plus
+# the extension in the secrets-in folder
+#
+def aesSymmetricEncryptFile(privateSecretName, aesKey):
+
+  #Add a new key to the manifest file and re-encrypt it.
+  addNewPrivateSecretNameToManifest(privateSecretName)
+
+  #get the public secret name 
+  publicSecretName = getPublicSecretName(privateSecretName)
+
+  #The secret file to encrypt comes from the secrets-in directory
+  filePathToEncrypt = joinPath(getSecretFilesIn(), privateSecretName)
+
+  nonce = get_random_bytes(16)
+  cipher = AES.new(aesKey, AES.MODE_EAX, nonce=nonce)
+  
+  #read the data
+  with open(filePathToEncrypt, 'rb') as file:
+    data = file.read()
+  
+  encryptedFileURI = joinPath(getSecretsDirectory(), f"{publicSecretName}.enc")
+
+  with open(encryptedFileURI, 'wb') as encFile:
+    encFile.write(cipher.nonce)
+    encFile.write(cipher.digest())
+    encFile.write(cipher.encrypt(data))
+
+
+# Adapted from some chat outputs and stackoverflow. 
+# The file will end up in the secrets-out folder.
+#     
+def aesSymmetricDecryptFile(privateSecretName, aesKey):
+  
+  #get the public secret name 
+  publicSecretName = getPublicSecretName(privateSecretName)
+
+  encryptedFileURI = joinPath(getSecretsDirectory(), f"{publicSecretName}.enc")
+
+  nonce = None 
+  digest = None 
+  ciphertext = None 
+
+  with open(encryptedFileURI, 'rb') as file:
+    nonce = file.read(16)
+    digest = file.read(16)
+    ciphertext = file.read()
+
+  if(nonce == None):
+    raise Exception("nonce is None")
+  
+  if(digest == None):
+    raise Exception("digest is None")
+  
+  if(ciphertext == None):
+    raise Exception('ciphertext is None')
+  
+  decryptedFileURI = joinPath(getSecretFilesOut(), privateSecretName)
+    
+  cipher = AES.new(aesKey, AES.MODE_EAX, nonce)
+  unencryptedData = cipher.decrypt_and_verify(ciphertext, digest)
+
+  with open(decryptedFileURI, 'wb') as file:
+    file.write(unencryptedData)
+
+
+
 ##
 # Encrypt a secret
 #
@@ -312,10 +367,10 @@ def setSecret(key, value, asjson=False, asBatch=False):
     raise Exception(f"You can't have a key with the string {AES_SUFFIX}")
   
   #Add a new key to the manifest file and re-encrypt it.
-  addNewKeyToManifest(key)
+  addNewPrivateSecretNameToManifest(key)
 
   #Get the filename that we're using
-  filename = getFilenameForKeyFromManfest(key)
+  filename = getPublicSecretName(key)
 
   #We first encrypt text symmetrically. 
   ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
@@ -367,7 +422,7 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   #The manifest pairs the actual friendly and presumable somewhat sensitive
   #name of the secret with the random name.
   #If this is the manfest itself, then the filename is just 'manifest'
-  filename = getFilenameForKeyFromManfest(key) if(__manifest == False) else key
+  filename = getPublicSecretName(key) if(__manifest == False) else key
   
   cipherTextMainURI = joinPath(getSecretsDirectory(), f"{filename}.txt")
   cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
