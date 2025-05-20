@@ -274,7 +274,6 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         print(f"Module not found: (0493873) {str(err)}")
 
 
-  #elif(background):
   elif(background or composite):
     
     #https://github.com/mhammond/pywin32/issues/1865
@@ -287,19 +286,13 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         raise Exception("No taskName.")
 
       module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
-      #ALEX-ARGS
       module.task(args)
     except Exception as err:
       handleException()
       print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
 
-  # elif(initStage2):
-  #   module = importlib.import_module(f'python_launchpad.utils.InitStage2')
-  #   module.init(stage2Password, stage2Handle)
 
   
-
-
 def runModuleInVEnv(modulePackageString):
 
   createVEnv()
