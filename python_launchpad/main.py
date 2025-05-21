@@ -48,6 +48,10 @@ def main():
   parser.add_argument('-init', help='Initialize the project', required=False, default=None)
   parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default=None)
 
+  parser.add_argument('-wsl-bridge-generate-keys', required=False, default="0", const="1", nargs='?')
+  parser.add_argument('-wsl-bridge-get-private-key', required=False, default="0", const="1", nargs='?')
+
+
   #This will add arguments for the different tasks
   parseArgs(parser, TASKS)
 
@@ -65,6 +69,8 @@ def main():
   initProjectHandle = args.get('init', None) 
   upgradeProjectHandle = args.get('upgrade', None)
   listSecrets = args.get('list_secrets', None) == "1"
+  wslBridgeGenerateKeys = args.get("wsl_bridge_generate_keys", None) == "1"
+  wslBridgeGetPrivateKey = args.get("wsl_bridge_get_private_key", None) == "1"
 
   taskInfo = None
 
@@ -127,6 +133,15 @@ def main():
 
   elif(upgradeProjectHandle != None):
     upgrade(upgradeProjectHandle)
+
+  elif(wslBridgeGenerateKeys):
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    secrets.generateKeys()  
+
+  elif(wslBridgeGetPrivateKey):
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    pkey = secrets.getPrivateKey()  
+    print(pkey)
     
   elif(version):
     versionInfo()

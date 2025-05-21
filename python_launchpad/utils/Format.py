@@ -4,6 +4,7 @@ import sys
 from math import isnan
 from datetime import date
 from pathlib import PureWindowsPath, PurePosixPath, Path
+import subprocess
 
 # getting the name of the directory
 # where the this file is present.
@@ -25,6 +26,7 @@ sys.path.append(parent)
 ########################################################
 
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
 
 #Have to repeat this here because it doesn't like to do circular imports between Env and Format
 def isWindows():
@@ -65,6 +67,40 @@ def dashCaseToFlagCase(dashCase):
 def flagCaseToDashCase(flagCase):
   return flagCase.replace('-', '_')[1:]
 
+
+"""Converts a WSL path to a Windows path.
+
+Args:
+    wsl_path: The WSL path to convert.
+
+Returns:
+    The equivalent Windows path, or None if the conversion fails.
+"""
+def wslToWindowsPath(wsl_path):
+  try:
+    result = subprocess.run(['wslpath', '-w', wsl_path], capture_output=True, text=True, check=True)
+    windows_path = result.stdout.strip()
+    return windows_path
+  except subprocess.CalledProcessError:
+    return None
+
+
+"""Converts a Windows path to a WSL path.
+
+Args:
+    windows_path: The Windows path to convert.
+
+Returns:
+    The equivalent WSL path, or None if the conversion fails.
+"""
+def windowsToWSLPath(windows_path):
+
+  try:
+    result = subprocess.run(['wslpath', '-u', windows_path], capture_output=True, text=True, check=True)
+    wsl_path = result.stdout.strip()
+    return wsl_path
+  except subprocess.CalledProcessError:
+    return None
 
 #Adapted from
 #https://stackoverflow.com/questions/19153462/get-excel-style-column-names-from-column-number   

@@ -16,16 +16,19 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
-from python_launchpad.utils.Format import joinPath, isWindows
+from python_launchpad.utils.Format import joinPath, isWindows, wslToWindowsPath
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR, RESOLVE_LINUX_ENVIRONMENT, RESOLVE_MAC_ENVIRONMENT, RESOLVE_WINDOWS_ENVIRONMENT
 
 from sys import platform
+
 
 filePath = path.abspath(path.dirname(__file__))
 
 ENV_WINDOWS = 'windows'
 ENV_LINUX = 'linux'
 ENV_MAC = 'mac'
+
+WINDOWS_UTILS_DIR = None
 
 mainJSONDataObj = None
 profileJSONDataObj = None
@@ -105,6 +108,19 @@ def getEnvironmentLevels():
   level1 = getEnvironmentLevel1()
   return level0, level1
 
+
+# Get the utils directory of the launchpad as an absolute windows uri, i.e. C://whatever
+#
+def getWindowsUtilsDirectory():
+  global WINDOWS_UTILS_DIR
+  if(WINDOWS_UTILS_DIR == None):
+    scriptDir = path.dirname(path.abspath(__file__))
+    WINDOWS_UTILS_DIR = wslToWindowsPath(scriptDir)
+
+    if(WINDOWS_UTILS_DIR == None):
+      raise Exception("(059404) A WSL error occured. I wasn't able to convert a WSL path to a windows path")
+
+  return WINDOWS_UTILS_DIR
 
 ###
 # get the project directory
@@ -253,12 +269,20 @@ def getVenvPath():
   venvPath = joinPath(dataDirectory, venvName)
   return venvPath  
 
+
 ##
 # get the path to the python executable
 #
 #
 def getPythonExecutable():  
-  pythonVenvPath = joinPath(getVenvPath(), 'Scripts', 'python.exe') if isWindows() else joinPath(getVenvPath(), 'Scripts', 'python')
+  pythonVenvPath = None 
+  if(isWindows()):
+    pythonVenvPath = joinPath(getVenvPath(), 'Scripts', 'python.exe') 
+
+  #For everyone else, you just use "python"  
+  else:
+    pythonVenvPath = "python"
+    
   return pythonVenvPath
 
 

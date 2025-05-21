@@ -38,7 +38,7 @@ def isWindows():
 #
 def requirementsHexDigestVarName():
   level0, level1 = getEnvironmentLevels() 
-  return f'{level0}_{level1}_requirments_hex_digest'
+  return f'{level0}_{level1}_requirements_hex_digest'
 
 
 # Get the path to the requirements file.

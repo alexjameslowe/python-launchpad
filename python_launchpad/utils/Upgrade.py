@@ -9,11 +9,14 @@
 
 from sys import path as syspath 
 from python_launchpad.utils.Format import joinPath
-from os import path
-from shutil import move, copy
-from python_launchpad.utils.Configure import getLaunchpadDirectory, getSecretsDirectory, getSecretFilesIn, getSecretFilesOut
+from os import path, rename, system
+from time import time
+from shutil import move, copy, rmtree
+from python_launchpad.utils.Configure import  getLaunchpadDirectory, getSecretsDirectory, getSecretFilesIn, getSecretFilesOut
 from python_launchpad.utils.File import replaceInPlace
 from python_launchpad.utils.Utils import readJSON
+from python_launchpad.utils.Format import wslToWindowsPath
+
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
@@ -24,6 +27,7 @@ def upgrade(pfx):
   lcpfx = pfx.lower()
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
   oldProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
+  backupDir = joinPath(projectParentDir, f'{lcpfx}_launchpad_backup')
 
   print("  ")
   print("  ")
@@ -41,8 +45,25 @@ def upgrade(pfx):
     
   if(not path.isdir(oldProjectDir)): 
     raise Exception("There is no launchpad called: {lcpfx}_launchpad")
-
+  
   try:
+    # https://stackoverflow.com/questions/67362152/issues-with-os-rename-getting-winerror-5-access-is-denied
+    print("** Backing up the old launchpad")
+    try: 
+      windowsBackupDirPath = wslToWindowsPath(backupDir)
+      print(f"Goddammit this is driving me nuts {windowsBackupDirPath}")
+      if(path.isdir(backupDir)):
+
+        #rename(backupDir, f"{backupDir}_{str(time())}")
+        system(f'Rename-Item -Path "{windowsBackupDirPath}" -NewName "{wslToWindowsPath(backupDir+"_"+time())}"')
+
+      #rename(oldProjectDir, backupDir)  
+      system(f'Rename-Item -Path "{wslToWindowsPath(oldProjectDir)}" -NewName "{windowsBackupDirPath}"')
+
+    except Exception as e:
+      print(f"** {str(e)}")
+      raise Exception("Could not perform backup. Close all the files in your project and try again")
+
 
     #Loop through the whole manifest of files and we're going to change
     #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
@@ -77,17 +98,17 @@ def upgrade(pfx):
     #Now we're going to rename the launchpad to the new name e.g. "myproj_launchpad"
     #projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
 
-    print("** Backing up the old launchpad")
-    backupDir = joinPath(projectParentDir, f'{lcpfx}_launchpad_backup')
+    #rename the old backup.
 
-    move(oldProjectDir, backupDir)  
 
     print("** Installing the new launchpad")
     #and now change the name of the launch pad to the new one.
     launchpadDir = joinPath(projectParentDir, 'python_launchpad') 
     newProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
 
-    move(launchpadDir, newProjectDir) 
+    #rename(launchpadDir, newProjectDir) 
+    system(f'Rename-Item -Path "{wslToWindowsPath(launchpadDir)}" -NewName "{f"{lcpfx}_launchpad"}"')
+
 
     print("** Copying settings")
     settingsFileFromOld = joinPath(backupDir, 'main.json')
@@ -98,7 +119,7 @@ def upgrade(pfx):
 
   except Exception as e: 
     print("**")
-    print(f"Error: {str(e)}")
+    print(f"** Error: {str(e)}")
     print("**")
     print("** Could not complete. Delete this python_launchpad and try a fresh copy.")
 
