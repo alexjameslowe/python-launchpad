@@ -77,12 +77,18 @@ Returns:
     The equivalent Windows path, or None if the conversion fails.
 """
 def wslToWindowsPath(wsl_path):
-  try:
-    result = subprocess.run(['wslpath', '-w', wsl_path], capture_output=True, text=True, check=True)
-    windows_path = result.stdout.strip()
-    return windows_path
-  except subprocess.CalledProcessError:
-    return None
+  wsl_path = wsl_path.replace("/mnt/c/", "C:\\")
+  wsl_path = wsl_path.replace("/", "\\")
+  #wsl_path = wsl_path.replace(" ","^ ")
+  return wsl_path
+  # try:
+  #   if(path.isdir(wsl_path)):
+  #     result = subprocess.run(['wslpath', '-w', wsl_path], capture_output=True, text=True, check=True)
+  #     windows_path = result.stdout.strip()
+  #     return windows_path
+  #   return None
+  # except subprocess.CalledProcessError:
+  #   return None
 
 
 """Converts a Windows path to a WSL path.

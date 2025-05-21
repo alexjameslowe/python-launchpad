@@ -1,8 +1,10 @@
 from os.path import exists 
-from os import remove
-from os import path
+from os import path, remove, rename
 from shutil import move 
+from python_launchpad.utils.Format import isWindows, wslToWindowsPath
 import sys
+import subprocess
+
 
 # getting the name of the directory
 # where the this file is present.
@@ -33,3 +35,14 @@ def replaceInPlace(infileURI, searchFor, replaceWith):
   replaceInFile(oldFile, newFile, searchFor, replaceWith)
   remove(oldFile)
   move(newFile, oldFile)
+
+
+#Rename a directory or file.
+#On Windows, renaming things will give you all kinds of terrible problems.
+#just do it this way if windows. Don't even bother with the os.rename.
+#
+def rename(oldDir, newDir):
+  if(isWindows()):
+    subprocess.run(["powershell", "Rename-Item", "-Path", f'"{wslToWindowsPath(oldDir)}"', "-NewName", f'"{wslToWindowsPath(newDir)}"'])
+  else:
+    rename(oldDir, newDir)
