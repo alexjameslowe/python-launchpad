@@ -14,9 +14,9 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from keyring import get_password, set_password
 
-from python_launchpad.utils.Configure import getSecretsDirectory, getMainSetting, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX, getWindowsUtilsDirectory
+from python_launchpad.utils.Configure import getSecretsDirectory, getMainSetting, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX
 from python_launchpad.utils.Utils import readJSON, randomString
-from python_launchpad.utils.Format import isWindows, joinPath
+from python_launchpad.utils.Format import isWindows, joinPath, wslToWindowsPath
 
 
 from base64 import b64decode,b64encode
@@ -70,70 +70,26 @@ def getPublicKey():
 # get the private key from keyring utility
 #
 #
-###
-# get the private key from keyring utility
-#
-#
-# def getPrivateKey():
-
-#   #WSL2 has problems with keyring. So what we're doing is we're going to call this on the windows side.
-#   level0, level1 = getEnvironmentLevels()
-#   if(level0 == ENV_LINUX and level1 == "wsl2"):
-#     scriptDir = path.dirname(path.abspath(__file__))
-#     #powershellPhase = ["powershell.exe", "-File", joinPath(scriptDir, 'wsl', 'wslBridgeGetPrivateKey.ps1')]
-#     #powershellPhase = ["powershell.exe"]
-
-#     print("Hey what is this? ")
-#     print(wsl_to_windows_path(joinPath(scriptDir, 'wsl', 'wslBridgeGetPrivateKey.ps1')))
-    
-#     #Yes this works
-#     # powershellPhase = ["powershell.exe", "-File", joinPath('optibus_launchpad', 'utils', 'wsl', 'wslBridgeGetPrivateKey.ps1')]
-#     # process = subprocess.Popen(powershellPhase, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#     # stdout_data, stderr_data = process.communicate()
-#     # output = stdout_data.decode()
-
-#     powershellPhase = ["powershell.exe", "-File", joinPath('optibus_launchpad', 'utils', 'wsl', 'wslBridgeGetPrivateKey.ps1')]
-#     result = subprocess.run(powershellPhase, capture_output = True, text = True)
-#     output = result.stdout
-#     #TODO do something with the error print(result.stderr)
-
-#     keyBeginString = "-----BEGIN RSA PRIVATE KEY-----"
-#     outputArr = output.split(keyBeginString)
-
-#     if(len(outputArr) != 2):
-#       print("(05059403) This is a WSL problem.")
-#       print('I had to call the windows-side script to get the private key because there\'s problems with the keyring utility on WSL2. However I received a response from the windows-side that I couldn\'t make sense of:')
-#       print(output)
-#       raise Exception("A WSL problem occurred while trying to fetch the private key from the windows side. See the output file for detail and find the code 05059403")
-    
-#     #concatenate the result with the beginning of the string and the
-#     #rest of the output. The reason we do it this way is that there's a 
-#     #chance that the windows environment wasnt set up yet, and it will
-#     #have to build before this can run. 
-#     return f"{keyBeginString}{outputArr[1]}"
-
-
-#   return get_password(getServiceName(), getUsername())
 def getPrivateKey():
 
-  #WSL2 has problems with keyring. So what we're doing is we're going to call this on the windows side.
+  # #WSL2 has problems with keyring. So what we're doing is we're going to call this on the windows side.
   level0, level1 = getEnvironmentLevels()
   if(level0 == ENV_LINUX and level1 == "wsl2"):
-    #scriptDir = path.dirname(path.abspath(__file__))
-    #powershellPhase = ["powershell.exe", "-File", joinPath(scriptDir, 'wsl', 'wslBridgeGetPrivateKey.ps1')]
-    #powershellPhase = ["powershell.exe"]
 
-    #print("Hey what is this? ")
-    #print(wsl_to_windows_path(joinPath(scriptDir, 'wsl', 'wslBridgeGetPrivateKey.ps1')))
-    
-    #Yes this works
-    # powershellPhase = ["powershell.exe", "-File", joinPath('optibus_launchpad', 'utils', 'wsl', 'wslBridgeGetPrivateKey.ps1')]
-    # process = subprocess.Popen(powershellPhase, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # stdout_data, stderr_data = process.communicate()
-    # output = stdout_data.decode()
-
-    powershellPhase = ["powershell.exe", "-File", getWindowsUtilsDirectory()+'\utils\wsl\wslBridgeGetPrivateKey.ps1']
-    result = subprocess.run(powershellPhase, capture_output = True, text = True)
+    #We have to list them this way. If we try to put everything
+    #on an array in one line we get a bizarre error; 
+    #'unicodeescape' codec can't decode bytes in position 0-1
+    #And get this, it happens in Powershell when this block isn't even firing.
+    #This is what happens when you're trying to write something that's xplatform
+    #you end up running into the rough edges.
+    psArgs = []
+    psArgs.append("powershell.exe")
+    psArgs.append("-NoProfile")
+    psArgs.append("-File")
+    scriptDir = path.dirname(path.abspath(__file__))
+    psArgs.append(wslToWindowsPath(joinPath(scriptDir, 'wsl', 'wslBridgeGetPrivateKey.ps1')))
+  
+    result = subprocess.run(psArgs, capture_output = True, text = True)
     output = result.stdout
     #TODO do something with the error print(result.stderr)
 
@@ -151,7 +107,6 @@ def getPrivateKey():
     #chance that the windows environment wasnt set up yet, and it will
     #have to build before this can run. 
     return f"{keyBeginString}{outputArr[1]}"
-
 
   return get_password(getServiceName(), getUsername())
 

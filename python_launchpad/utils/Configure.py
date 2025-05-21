@@ -28,8 +28,6 @@ ENV_WINDOWS = 'windows'
 ENV_LINUX = 'linux'
 ENV_MAC = 'mac'
 
-WINDOWS_UTILS_DIR = None
-
 mainJSONDataObj = None
 profileJSONDataObj = None
 configureInteractiveMode = False
@@ -109,18 +107,6 @@ def getEnvironmentLevels():
   return level0, level1
 
 
-# Get the utils directory of the launchpad as an absolute windows uri, i.e. C://whatever
-#
-def getWindowsUtilsDirectory():
-  global WINDOWS_UTILS_DIR
-  if(WINDOWS_UTILS_DIR == None):
-    scriptDir = path.dirname(path.abspath(__file__))
-    WINDOWS_UTILS_DIR = wslToWindowsPath(scriptDir)
-
-    if(WINDOWS_UTILS_DIR == None):
-      raise Exception("(059404) A WSL error occured. I wasn't able to convert a WSL path to a windows path")
-
-  return WINDOWS_UTILS_DIR
 
 ###
 # get the project directory

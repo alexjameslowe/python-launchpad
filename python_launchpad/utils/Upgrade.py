@@ -12,26 +12,15 @@ from python_launchpad.utils.Format import joinPath
 from os import path, rename, system
 import subprocess
 from time import time
-from shutil import move, copy, rmtree
-from python_launchpad.utils.Configure import isWindows, getEnvironmentLevels, getLaunchpadDirectory, getSecretsDirectory, getSecretFilesIn, getSecretFilesOut
+from shutil import copy
+from python_launchpad.utils.Configure import getLaunchpadDirectory
 from python_launchpad.utils.File import replaceInPlace, rename as xrename
 from python_launchpad.utils.Utils import readJSON
-from python_launchpad.utils.Format import wslToWindowsPath
 
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
-
-
-#On Windows, renaming things will give you all kinds of terrible problems.
-#just do it this way if windows. Don't even bother with the os.rename.
-#
-# def renameDirectory(oldDir, newDir):
-#   if(isWindows()):
-#     subprocess.run(["powershell", "Rename-Item", "-Path", f'"{wslToWindowsPath(oldDir)}"', "-NewName", f'"{wslToWindowsPath(newDir)}"'])
-#   else:
-#     rename(oldDir, newDir)
 
 
 def upgrade(pfx):
@@ -61,26 +50,11 @@ def upgrade(pfx):
   try:
   
     # https://stackoverflow.com/questions/67362152/issues-with-os-rename-getting-winerror-5-access-is-denied
-    print("** Backing up the old launchpad")
-    try: 
-    
-      if(path.isdir(backupDir)):
-        #rename(backupDir, f"{backupDir}_{str(time())}")
-        #system(f'powershell Rename-Item -Path {windowsBackupDirPath} -NewName "{wslToWindowsPath(backupDir+"_"+time())}"')
-        #subprocess.run(["powershell", "Rename-Item", "-Path", f'"{windowsBackupDirPath}"', "-NewName", f'"{wslToWindowsPath(backupDir+"_"+time())}"'])
-        xrename(backupDir, backupDir+"_"+str(int(time())))
+    print("** Backing up the old launchpad")    
+    if(path.isdir(backupDir)):
+      xrename(backupDir, backupDir+"_"+str(int(time())))
 
-      #rename(oldProjectDir, backupDir)  
-      #print("AAAAAAAA")
-      #print(f'powershell Rename-Item -Path "{wslToWindowsPath(oldProjectDir)}" -NewName "{windowsBackupDirPath}"')
-      #system(f'powershell Rename-Item -Path "{wslToWindowsPath(oldProjectDir)}" -NewName "{windowsBackupDirPath}"')
-      #subprocess.run(["powershell", "Rename-Item", "-Path", f'"{wslToWindowsPath(oldProjectDir)}"', "-NewName", f'"{windowsBackupDirPath}"'])
-      xrename(oldProjectDir, backupDir)
-
-    except Exception as e:
-      print(f"** {str(e)}")
-      raise Exception("Could not perform backup. Close all the files in your project and try again")
-
+    xrename(oldProjectDir, backupDir)
 
     #Loop through the whole manifest of files and we're going to change
     #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
@@ -112,21 +86,12 @@ def upgrade(pfx):
     replaceInPlace(mainFile, f"from {launchpadName}.Tasks", f'from {lcpfx}_task_list')
     replaceInPlace(mainFile, f"project-name-goes-here", lcpfx)
 
-    #Now we're going to rename the launchpad to the new name e.g. "myproj_launchpad"
-    #projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
-
-    #rename the old backup.
-
-
     print("** Installing the new launchpad")
     #and now change the name of the launch pad to the new one.
     launchpadDir = joinPath(projectParentDir, 'python_launchpad') 
     newProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
 
-    #rename(launchpadDir, newProjectDir) 
-    #system(f'powershell Rename-Item -Path "{wslToWindowsPath(launchpadDir)}" -NewName "{wslToWindowsPath(newProjectDir)}"')
     xrename(launchpadDir, newProjectDir)
-    #raise Exception("OH SHIT!!")
 
     print("** Copying settings")
     settingsFileFromOld = joinPath(backupDir, 'main.json')
