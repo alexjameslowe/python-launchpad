@@ -11,14 +11,27 @@ import sys
 from os import path, mkdir
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.utils.Configure import getDataDirectory
+from python_launchpad.utils.File import removeIfExists
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
+MODE_NORMAL = 'normal'
+MODE_CLEANUP = 'cleanup'
+MODE = MODE_NORMAL
+
+def setVarsToNormal():
+  global MODE 
+  MODE = MODE_NORMAL
+
+def setVarsToCleanup():
+  global MODE 
+  MODE = MODE_CLEANUP
 
 def getVarURI(varName):
   createVarsIfNeeded()
-  uri = joinPath(getVarsDirPath(), f'--{varName}.txt')
+  pfx = '--' if MODE == MODE_NORMAL else '__'
+  uri = joinPath(getVarsDirPath(), f'{pfx}{varName}.txt')
   return uri
 
 ##
@@ -61,3 +74,7 @@ def isVar(varName):
   createVarsIfNeeded()
   doesExist = path.isfile(getVarURI(varName))
   return doesExist
+
+def rmVar(varName):
+  createVarsIfNeeded()
+  removeIfExists(getVarURI(varName))

@@ -7,7 +7,7 @@ from sys import path as syspath, exc_info
 
 from python_launchpad.utils.Configure import getMainSetting, getDataDirectory, getEnvironmentLevels, getVEnvName, getVenvPath
 from python_launchpad.utils.Format import joinPath
-from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar
+from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar, rmVar, setVarsToNormal, setVarsToCleanup
 from python_launchpad.Info import REQUIREMENTS, BASE_REQUIREMENTS
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
@@ -170,6 +170,18 @@ def installRequirements(performInstall, hexDigest):
     setVar(requirementsHexDigestVarName(), hexDigest)
 
 
+# After a run, we're going to cleanup the thread-safe variables
+# so that everything is ready for the next run no matter how this ended.
+#
+def cleanupVars():
+  setVarsToCleanup()
+  rmVar('ERROR')
+  rmVar('RUNNING')
+  rmVar('STEP')
+  rmVar('WARNING')
+  rmVar('PROCESS')
+  setVar('GRACEFUL_EXIT', False)
+  setVarsToNormal()
 
 # Activate the linux or windows virtual environment
 # This is idempotent. If it's already active, this will have no effect.
@@ -269,6 +281,10 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     except Exception as err:
       handleException()
       print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
+    
+    #No matter what happens, clean up the variables that monitor the process.
+    finally:
+      cleanupVars()
 
 
   

@@ -34,9 +34,6 @@ def printMsg():
 #
 def gracefulExit(msg=""):  
   if(getVar(GRACEFUL_EXIT, asbool=True)):
-    setVar(RUNNING, False)
-    rmVar(ERROR)
-    rmVar(WARNING)
     raise Exception(f"Graceful exiting {msg}")
   
 
