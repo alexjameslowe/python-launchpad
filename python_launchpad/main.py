@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Configure import configure, setProfileSetting, versionInfo
-from python_launchpad.utils.VEnv import activate, runModuleInVEnv
+from python_launchpad.utils.VEnv import activate, runModuleInVEnv, cleanupNonPersistVars
 from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.InitStage1 import init
 from python_launchpad.utils.Upgrade import upgrade
@@ -47,6 +47,7 @@ def main():
 
   parser.add_argument('-init', help='Initialize the project', required=False, default=None)
   parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default=None)
+  parser.add_argument('-cleanup-task', help='Clean up after a task has failed in an ungraceful fashion like a crash', required=False, default="0", const="1", nargs='?')
 
   parser.add_argument('-wsl-bridge-generate-keys', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-wsl-bridge-get-private-key', required=False, default="0", const="1", nargs='?')
@@ -71,6 +72,7 @@ def main():
   listSecrets = args.get('list_secrets', None) == "1"
   wslBridgeGenerateKeys = args.get("wsl_bridge_generate_keys", None) == "1"
   wslBridgeGetPrivateKey = args.get("wsl_bridge_get_private_key", None) == "1"
+  cleanupTask =  args.get("cleanup_task", None) == "1"
 
   taskInfo = None
 
@@ -86,22 +88,30 @@ def main():
 
   if(taskInfo != None):
 
-    # #If this is composite, then that means that we're going to just run it 
-    # in the foreground 
-    if(composite):
-      activate(taskInfo, args=args, composite=True)
+    #If we're supposed to cleanup after a task because something went wrong,
+    #then we're going to run this
+    if(cleanupTask):
+      cleanupNonPersistVars(taskInfo)
 
-    #If this isn't the -background, then we're going to launch the script on 
-    #a subprocess and monitor it with some thread-safe files.
-    elif(not background):
-      activate(taskInfo, args=args, foreground=True)
-
-    #Else, this is the actual task which will be running in the background.
-    #Activate the virtual environment, which is going to 
-    #perform the installation and setup of the virtual environment
-    #and then run the task.
+    #Else, we're going to run the task, handling a couple of different modes.
     else:
-      activate(taskInfo, args=args, background=True)
+
+      # #If this is composite, then that means that we're going to just run it 
+      # in the foreground 
+      if(composite):
+        activate(taskInfo, args=args, composite=True)
+
+      #If this isn't the -background, then we're going to launch the script on 
+      #a subprocess and monitor it with some thread-safe files.
+      elif(not background):
+        activate(taskInfo, args=args, foreground=True)
+
+      #Else, this is the actual task which will be running in the background.
+      #Activate the virtual environment, which is going to 
+      #perform the installation and setup of the virtual environment
+      #and then run the task.
+      else:
+        activate(taskInfo, args=args, background=True)
   
   #Configure the program
   if(config):
