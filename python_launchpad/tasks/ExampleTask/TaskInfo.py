@@ -8,19 +8,24 @@ def validateArgs(argsObj):
 
 info = {
 
-   #This is the argument which will select this task.
+  #This is the argument which will select this task.
   'taskArg':'example_task',
 
-   #This is the name of the task to run. Note that there must be a Task.py and 
-   #a Monitor.py file in the task folder.
+  #This is the name of the task to run. Note that there must be a Task.py and 
+  #a Monitor.py file in the task folder.
   'taskName':'ExampleTask',
 
-   #Is this a single background task or is it a composite of several tasks?
+  #Is this a single background task or is it a composite of several tasks?
   'composite':False,
 
+  # A validator function to look at all the arguments
   'validator':validateArgs,
+
+  # These are names of non-persistent variables that get reset at the end
+  # of a run. The default ones are RUNNING ERROR STEP WARNING GRACEFUL_EXIT PROCESS
+  'nonPersistVars':[],
   
-   #Here are the other arguments that will be present in the command-line.
+  #Here are the other arguments that will be present in the command-line.
   'args': [
       
     #This is a flag-only arg "-test-arg". It just comes through as "1" if present in the 

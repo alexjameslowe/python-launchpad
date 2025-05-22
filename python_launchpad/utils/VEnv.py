@@ -173,14 +173,11 @@ def installRequirements(performInstall, hexDigest):
 # After a run, we're going to cleanup the thread-safe variables
 # so that everything is ready for the next run no matter how this ended.
 #
-def cleanupVars():
+def cleanupNonPersistVars(taskInfo):
+  nonPersistentVars = taskInfo.get("nonPersistVars", []) + ['ERROR', 'RUNNING', 'STEP', 'WARNING', 'PROCESS', 'GRACEFUL_EXIT']
   setVarsToCleanup()
-  rmVar('ERROR')
-  rmVar('RUNNING')
-  rmVar('STEP')
-  rmVar('WARNING')
-  rmVar('PROCESS')
-  setVar('GRACEFUL_EXIT', False)
+  for varName in nonPersistentVars:
+    rmVar(varName)
   setVarsToNormal()
 
 # Activate the linux or windows virtual environment
@@ -284,7 +281,7 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     
     #No matter what happens, clean up the variables that monitor the process.
     finally:
-      cleanupVars()
+      cleanupNonPersistVars(taskInfo)
 
 
   
