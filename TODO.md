@@ -46,7 +46,7 @@ Need to be able to overwrite or append new secrets in a batch.
 ## 10
 Need a utility called Paths which give us all of the paths that this thing uses, and that will be broken out of the Configure.py utility. 
 
-## 11
+## 11 DONE
 Need to rename the Init.py InitStage1.py
 
 ## 12 
@@ -84,7 +84,7 @@ For stacktrace, figure out where to put this:
     error_string = ''.join(lines)
     print(error_string)
 
-## 17 
+## 17 DONE
 Need to have some way to reset all of the thread-safe variables.
 
 ## 18 
