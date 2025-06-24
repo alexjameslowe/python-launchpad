@@ -7,7 +7,7 @@ from sys import path as syspath, exc_info
 
 from python_launchpad.utils.Configure import getMainSetting, getDataDirectory, getEnvironmentLevels, getVEnvName, getVenvPath
 from python_launchpad.utils.Format import joinPath
-from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar, rmVar, setVarsToNormal, setVarsToCleanup
+from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar, rmVar, setVarsToNormal, setVarsToThreadSafe
 from python_launchpad.Info import REQUIREMENTS, BASE_REQUIREMENTS
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
@@ -159,7 +159,16 @@ def createVEnv():
 #Install the requirements. If the installation is successful, then we're
 #going to update the hex digest of the requirements.txt for idempotence
 #(so that we don't re-install the dependencies if we don't have to)
-def installRequirements(performInstall, hexDigest):
+#There is a force parameter that will just make it install it without messing
+#around with anything else.
+def installRequirements(performInstall, hexDigest, force=False):
+
+  if(force):
+    res = system(f'pip install -r "{getRequirementsFilePath()}"')
+    if(res != 0):
+      raise Exception(f'019384 pip install result was non-zero.')
+    return
+
   if(performInstall):
     refreshRequirementsFile()
 
@@ -170,15 +179,105 @@ def installRequirements(performInstall, hexDigest):
     setVar(requirementsHexDigestVarName(), hexDigest)
 
 
-# After a run, we're going to cleanup the thread-safe variables
-# so that everything is ready for the next run no matter how this ended.
+# get the base non-persist variables and 
+# return a simpe kvp.
+#
+def getBaseNonPersistVars():
+  return {'ERROR':'', 'RUNNING':True, 'STEP':'', 'WARNING':'', 'PROCESS':None, 'GRACEFUL_EXIT':None }
+
+
+# get the base vars and the vars from the task and merge them
+#
+def getNonPersistVars(taskInfo):
+  nonPersistentVars = taskInfo.get("nonPersistVars", {})
+  nonPersistentVars.update(getBaseNonPersistVars())
+  return nonPersistentVars
+
+
+# initialize the non-persistent variables to their initial value
+# 
+def initializeNonPersistVars(taskInfo):
+  allVars = getNonPersistVars(taskInfo)
+
+  setVarsToThreadSafe()
+
+  for key, value in allVars.items():
+    varName = key 
+    varInitialValue = value
+    setVar(varName, varInitialValue)
+
+  setVarsToNormal()
+
+
+# After a run, we're going to cleanup the threadsafe RUNNING variable
+# This used to clean up everything but then I realized that 
+# most of the information about the run is useful and you really
+# just want to set everything to it default state right before the
+# task starts, except for RUNNING and PROCESS which should be 
+# cleared out at the end of a task.
 #
 def cleanupNonPersistVars(taskInfo):
-  nonPersistentVars = taskInfo.get("nonPersistVars", []) + ['ERROR', 'RUNNING', 'STEP', 'WARNING', 'PROCESS', 'GRACEFUL_EXIT']
-  setVarsToCleanup()
-  for varName in nonPersistentVars:
-    rmVar(varName)
+  #allVars = getNonPersistVars(taskInfo)
+  
+  #we're dealing in the non-thread variables.
+  #so we're going to change the state to that it cleans up
+  #the thread-safe variables.
+  setVarsToThreadSafe()
+  rmVar('RUNNING')
+  rmVar('PROCESS')
+  # for key, value in allVars.items():
+  #   varName = key
+
+  #   #We don't want to clean up error or warning because
+  #   #want to be able to report those after the run of the program.
+  #   if(varName != 'ERROR' and varName != 'WARNING'):
+  #     rmVar(varName)
+
+  #set the non-thread var utility back to normal.
   setVarsToNormal()
+
+
+# Every now and again, we just need to refresh the dependencies because of some weird thing
+# that happens, e.g. this one:
+# Version mismatch: this is the 'cffi' package version 1.17.1, located in 'blah/blah/python3.9/site-packages/cffi/api.py'.  
+# When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  
+# The two versions should be equal; check your installation.
+#
+def forceRefreshDependencies():
+
+  print("Refreshing dependencies...")
+
+  if(not isVenvActive()):
+    venvPath = getVenvPath()
+  
+    activate_this = None 
+
+    if(isWindows()):
+      activate_this =  joinPath(venvPath, "Scripts", "activate_this.py")
+    else:
+      activate_this = joinPath(venvPath, "bin", "activate_this.py")
+
+    # https://www.a2hosting.com/kb/developer-corner/python/activating-a-python-virtual-environment-from-a-script-file
+    # here's how we activate the virtual environment programmatically.
+    # there's no need for a deactivate function. The effects of the activate_this.py
+    # only persist for the current run of the script.
+    with open(activate_this) as f:
+      code = compile(f.read(), activate_this, 'exec')
+      exec(code, dict(__file__=activate_this))
+
+    try:
+      #pass the force flag and this won't touch the hash file
+      installRequirements(None, None, force=True)
+    except Exception as err:
+      raise Exception(f"694583 {str(err)} Installation failed.")
+    
+    print("Success!")
+  
+  else:
+    print("Can't run because venv is active.")
+
+
+
 
 # Activate the linux or windows virtual environment
 # This is idempotent. If it's already active, this will have no effect.
@@ -257,10 +356,12 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
         
         module = importlib.import_module(f'{tasksModuleName}.{taskName}.Monitor')
         module.monitor()
-      except Exception as err:
+      except ModuleNotFoundError as err:
         handleException()
         print(f"Module not found: (0493873) {str(err)}")
-
+      except Exception as err:
+        handleException()
+        print(f"Monitor error: (119384) {str(err)}")
 
   elif(background or composite):
     
@@ -269,16 +370,21 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     #loaded is 228 which is too old and you're going to get this error.
     #Python DLL load failed while importing _win32sysloader The specified module could not be found.txt
     try:
+      initializeNonPersistVars(taskInfo)
       taskName = taskInfo.get('taskName', None)
       if(taskName == None):
         raise Exception("No taskName.")
 
       module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
       module.task(args)
-    except Exception as err:
+    except ModuleNotFoundError as err:
       handleException()
       print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
-    
+    except Exception as err:
+      handleException()
+      print(f"Task error: (563290) {str(err)}")
+      
+
     #No matter what happens, clean up the variables that monitor the process.
     finally:
       cleanupNonPersistVars(taskInfo)

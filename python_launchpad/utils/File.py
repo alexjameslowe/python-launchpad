@@ -1,5 +1,5 @@
 from os.path import exists 
-from os import path, remove, rename
+from os import path, remove, rename as osrename
 from shutil import move 
 from python_launchpad.utils.Format import isWindows, wslToWindowsPath
 import sys
@@ -45,4 +45,4 @@ def rename(oldDir, newDir):
   if(isWindows()):
     subprocess.run(["powershell", "Rename-Item", "-Path", f'"{wslToWindowsPath(oldDir)}"', "-NewName", f'"{wslToWindowsPath(newDir)}"'])
   else:
-    rename(oldDir, newDir)
+    osrename(oldDir, newDir)

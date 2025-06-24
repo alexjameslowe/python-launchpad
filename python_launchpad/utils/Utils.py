@@ -94,9 +94,3 @@ def readJSON(filePath, errorMode=0, previousData=None):
       else:
         return dataObj
       
-
-
-# def normWindowsPath(dirtyURI, asObj=False):
-#   purePath = PureWindowsPath(path.normpath(dirtyURI))
-#   return purePath if asObj else str(purePath)
-

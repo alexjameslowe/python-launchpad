@@ -3,6 +3,7 @@
     "tasks/ExampleTask/Monitor.py",
     "tasks/ExampleTask/TaskInfo.py",
     "utils/Configure.py", 
+    "utils/Docker.py",
     "utils/File.py", 
     "utils/Format.py", 
     "utils/GracefulExit.py", 

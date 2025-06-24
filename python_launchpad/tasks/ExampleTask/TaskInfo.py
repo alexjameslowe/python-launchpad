@@ -23,7 +23,15 @@ info = {
 
   # These are names of non-persistent variables that get reset at the end
   # of a run. The default ones are RUNNING ERROR STEP WARNING GRACEFUL_EXIT PROCESS
-  'nonPersistVars':[],
+  # It's listed as key-value pairs. The key is the name of the variable
+  # and the value is the value that it gets initialized with.
+  'nonPersistVars':{},
+  #'nonPersistVars:['
+  #  'myVar': 0,
+  #  'myVar2': '<a-string>',
+  #  ...
+  #  ...
+  
   
   #Here are the other arguments that will be present in the command-line.
   'args': [

@@ -17,16 +17,16 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 MODE_NORMAL = 'normal'
-MODE_CLEANUP = 'cleanup'
+MODE_THREADSAFE = 'cleanup'
 MODE = MODE_NORMAL
 
 def setVarsToNormal():
   global MODE 
   MODE = MODE_NORMAL
 
-def setVarsToCleanup():
+def setVarsToThreadSafe():
   global MODE 
-  MODE = MODE_CLEANUP
+  MODE = MODE_THREADSAFE
 
 def getVarURI(varName):
   createVarsIfNeeded()

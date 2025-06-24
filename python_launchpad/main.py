@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Configure import configure, setProfileSetting, versionInfo
-from python_launchpad.utils.VEnv import activate, runModuleInVEnv, cleanupNonPersistVars
+from python_launchpad.utils.VEnv import activate, runModuleInVEnv, cleanupNonPersistVars, forceRefreshDependencies
 from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.InitStage1 import init
 from python_launchpad.utils.Upgrade import upgrade
@@ -48,7 +48,8 @@ def main():
   parser.add_argument('-init', help='Initialize the project', required=False, default=None)
   parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default=None)
   parser.add_argument('-cleanup-task', help='Clean up after a task has failed in an ungraceful fashion like a crash', required=False, default="0", const="1", nargs='?')
-
+  parser.add_argument('-refresh-deps', help='Refresh the dependencies', required=False, default="0", const="1", nargs='?')
+  
   parser.add_argument('-wsl-bridge-generate-keys', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-wsl-bridge-get-private-key', required=False, default="0", const="1", nargs='?')
 
@@ -73,6 +74,7 @@ def main():
   wslBridgeGenerateKeys = args.get("wsl_bridge_generate_keys", None) == "1"
   wslBridgeGetPrivateKey = args.get("wsl_bridge_get_private_key", None) == "1"
   cleanupTask =  args.get("cleanup_task", None) == "1"
+  refreshDeps = args.get("refresh_deps", None) == "1"
 
   taskInfo = None
 
@@ -120,6 +122,10 @@ def main():
 
     module = runModuleInVEnv('python_launchpad.utils.InitStage2')
     module.init()
+
+  #refresh the dependencies
+  elif(refreshDeps != None):
+    forceRefreshDependencies()
 
   #If we're setting a value in the profile data, then do that here.
   elif(setValue != None and forKey != None):
