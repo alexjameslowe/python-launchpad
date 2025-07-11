@@ -19,8 +19,9 @@ from python_launchpad.utils.Var import setVar, getVar, ERROR, RUNNING, PROCESS, 
 #on to the user to update the screen as we go.
 def launch(args, taskInfo):
   
+  #TODO remove this
   #Set this to false to start with
-  setVar(GRACEFUL_EXIT, False)
+  #setVar(GRACEFUL_EXIT, False)
 
   #We're going to record the process
   pid = 0
@@ -33,13 +34,14 @@ def launch(args, taskInfo):
     with open(outputFile, "w+") as f:
       f.write("")
 
-    isRunning = getVar(RUNNING, asbool=True)
-    if(isRunning):
-      raise Exception("There's already a report running. Please wait for it to stop.")
+    # TODO remove this
+    # isRunning = getVar(RUNNING, asbool=True)
+    # if(isRunning):
+    #   raise Exception("There's already a report running. Please wait for it to stop.")
 
-    #TODO make this work with linux  
-    #ALEX-20250304
-    setVar(RUNNING, True)  
+    # #TODO make this work with linux  
+    # #ALEX-20250304
+    # setVar(RUNNING, True)  
    
     #Put together arguments for the subprocess. Note that we're calling
     #the python executable from the virtual environment if a virtual environment
@@ -137,7 +139,9 @@ def launch(args, taskInfo):
     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
     error_string = ''.join(lines)
     print(error_string)
-    setVar(RUNNING, False)  
+    
+    #TODO remove this
+    #setVar(RUNNING, False)  
 
     return False
 

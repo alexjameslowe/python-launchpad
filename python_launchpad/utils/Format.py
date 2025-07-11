@@ -136,3 +136,22 @@ def dateFromYYYYMMDD(yyyymmdd):
   
   newDate = date(yyyy, mm, dd)
   return newDate
+
+
+#A helper to format a string for interpolation into a CLI string
+def formatForCLI(dirty, escapeSingleQuote=False, escapeDoubleQuote=False):
+  clean = dirty 
+  if(escapeSingleQuote):
+    clean = clean.replace("'", "\\'")
+  if(escapeDoubleQuote):
+    clean = clean.replace('"', '\\"')
+  
+  clean = clean.replace("\n", " ").replace("\r", "").strip()
+
+  return clean
+
+# https://stackoverflow.com/questions/16807011/python-how-to-identify-if-a-variable-is-an-array-or-a-scalar
+def isEmptyArray(x):
+  if hasattr(x, '__len__') and (not isinstance(x, str) and len(x) == 0):
+    return True 
+  return False

@@ -7,7 +7,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Configure import configure, setProfileSetting, versionInfo
-from python_launchpad.utils.VEnv import activate, runModuleInVEnv, cleanupNonPersistVars, forceRefreshDependencies
+from python_launchpad.utils.VEnv import activate, runModuleInVEnv, cleanupTaskVars, forceRefreshDependencies
 from python_launchpad.utils.TaskHelper import parseArgs, getTaskInfo
 from python_launchpad.utils.InitStage1 import init
 from python_launchpad.utils.Upgrade import upgrade
@@ -93,7 +93,7 @@ def main():
     #If we're supposed to cleanup after a task because something went wrong,
     #then we're going to run this
     if(cleanupTask):
-      cleanupNonPersistVars(taskInfo)
+      cleanupTaskVars(taskInfo, True)
 
     #Else, we're going to run the task, handling a couple of different modes.
     else:
@@ -124,7 +124,7 @@ def main():
     module.init()
 
   #refresh the dependencies
-  elif(refreshDeps != None):
+  elif(refreshDeps):
     forceRefreshDependencies()
 
   #If we're setting a value in the profile data, then do that here.

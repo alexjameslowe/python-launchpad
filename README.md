@@ -73,3 +73,19 @@ This will build your virtual enviornment in an out-of-the way location and allow
 
 Add this for the Long Path instructions for Windows. 
 https://github.com/maljefairi/Windows-Long-Path
+
+# Troubleshooting
+
+Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'.  When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
+
+https://foss.heptapod.net/pypy/cffi/-/issues/540
+
+I tried adding the cffi 1.14 dependency to the linux wsl2, in the project info.py file but it didn't work.
+
+https://dev.to/ask_dba/comment/jnd9
+sudo pip3 install cffi==1.14
+
+No dice I tried that.
+
+https://forum.seafile.com/t/seahub-fails-to-start-cffi-issue/17154
+python3 -m pip install --force-reinstall --upgrade --target <SOMEWHERE>/seafile-server-9.0.5/seahub/thirdpart cffi==1.14.6

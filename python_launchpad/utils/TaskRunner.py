@@ -39,28 +39,34 @@ def gracefulExit(msg=""):
 
 ##
 # start a task. Call this at the start of your try case.
+# TODO- remove this
+# We don't need this because the error and warnings are 
+# all handled automatically along with the other variables, 
+# including the initial values.
 #
 def startTask():
-
-  rmVar(ERROR)
-  rmVar(WARNING)
-  
-  #Set this to false to start with
-  setVar(GRACEFUL_EXIT, False)
-
-  #Set this to True
-  setVar(RUNNING, True)
+  pass 
+  # rmVar(ERROR)
+  # rmVar(WARNING)
+  # #Set this to false to start with
+  # setVar(GRACEFUL_EXIT, False)
+  # #Set this to True
+  # setVar(RUNNING, True)
 
 
 
 ##
 # end a task. This must be called in the finally block of the task.
 #
+# TODO: remove this
+# We don't need this either for the same reasons that we dont need the
+# start task. the variables are already managed.
+#
 def endTask():
-  
+  pass
   #We got to the end, so set running to false
   #and remove the process id.
-  setVar(RUNNING, False)
-  rmVar(PROCESS)
-  rmVar(WARNING)
-  exit()
+  # setVar(RUNNING, False)
+  # rmVar(PROCESS)
+  # rmVar(WARNING)
+  # exit()

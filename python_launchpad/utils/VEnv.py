@@ -182,29 +182,42 @@ def installRequirements(performInstall, hexDigest, force=False):
 # get the base non-persist variables and 
 # return a simpe kvp.
 #
-def getBaseNonPersistVars():
-  return {'ERROR':'', 'RUNNING':True, 'STEP':'', 'WARNING':'', 'PROCESS':None, 'GRACEFUL_EXIT':None }
+def getBaseTaskVars():
+  return [
+    {'name':'ERROR',         'init':'',   'behavior':'output'},
+    {'name':'RUNNING',       'init':True, 'behavior':'die'},
+    {'name':'STEP',          'init':'',   'behavior':'die'},
+    {'name':'WARNING',       'init':'',   'behavior':'output'},
+    {'name':'PROCESS',       'init':None, 'behavior':'die'},
+    {'name':'GRACEFUL_EXIT', 'init':None, 'behavior':'output'}
+  ]
+
+
+def getVarBehaviors():
+  return ['die', 'output', 'persist']
 
 
 # get the base vars and the vars from the task and merge them
 #
-def getNonPersistVars(taskInfo):
-  nonPersistentVars = taskInfo.get("nonPersistVars", {})
-  nonPersistentVars.update(getBaseNonPersistVars())
-  return nonPersistentVars
+def getTaskVars(taskInfo):
+  baseAndProjectVars = getBaseTaskVars() + taskInfo.get("vars", [])
+  return baseAndProjectVars
 
 
 # initialize the non-persistent variables to their initial value
 # 
-def initializeNonPersistVars(taskInfo):
-  allVars = getNonPersistVars(taskInfo)
+def initializeTaskVars(taskInfo):
+  allVars = getTaskVars(taskInfo)
 
   setVarsToThreadSafe()
 
-  for key, value in allVars.items():
-    varName = key 
-    varInitialValue = value
-    setVar(varName, varInitialValue)
+  for variable in allVars:
+    varName = variable['name']
+    varVal = variable['init']
+    varBehavior = variable['behavior']
+    if(not varBehavior in getVarBehaviors()):
+      raise Exception(f'Task: {taskInfo["taskName"]}: The variable {varName} must have a behavior that is one of {','.join(getVarBehaviors())}')
+    setVar(varName, varVal)
 
   setVarsToNormal()
 
@@ -216,25 +229,41 @@ def initializeNonPersistVars(taskInfo):
 # task starts, except for RUNNING and PROCESS which should be 
 # cleared out at the end of a task.
 #
-def cleanupNonPersistVars(taskInfo):
-  #allVars = getNonPersistVars(taskInfo)
+def cleanupTaskVars(taskInfo, beforeRunOrAfter):
+  allVars = getTaskVars(taskInfo)
   
   #we're dealing in the non-thread variables.
   #so we're going to change the state to that it cleans up
   #the thread-safe variables.
   setVarsToThreadSafe()
-  rmVar('RUNNING')
-  rmVar('PROCESS')
-  # for key, value in allVars.items():
-  #   varName = key
 
-  #   #We don't want to clean up error or warning because
-  #   #want to be able to report those after the run of the program.
-  #   if(varName != 'ERROR' and varName != 'WARNING'):
-  #     rmVar(varName)
+  #Now, loop through and apply the behaviors
+  #If we've started the run, then we're going to zero-out the output variables
+  #We're going to zero-out the 'die' variables at the start and end
+  #Finally, we're not going to touch the persist variables at all.
+  for variable in allVars:
+    varName = variable['name']
+    varBehavior = variable['behavior']
+
+    if(varBehavior == 'die'):
+      rmVar(varName)
+    
+    elif(varBehavior == 'output' and beforeRunOrAfter):
+      rmVar(varName)
 
   #set the non-thread var utility back to normal.
   setVarsToNormal()
+
+
+# stop the task from running if there's already one goings.
+# 
+def bailoutIfRunning():
+  setVarsToThreadSafe()
+  isRunning = getVar('RUNNING', asbool=True)
+  setVarsToNormal()
+  if(isRunning):
+    raise Exception("There's already a task running. Please wait for it to stop.")
+
 
 
 # Every now and again, we just need to refresh the dependencies because of some weird thing
@@ -370,7 +399,16 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
     #loaded is 228 which is too old and you're going to get this error.
     #Python DLL load failed while importing _win32sysloader The specified module could not be found.txt
     try:
-      initializeNonPersistVars(taskInfo)
+
+      #Stop the task from running.
+      bailoutIfRunning()
+
+      #Cleanup the variables before the run
+      cleanupTaskVars(taskInfo, True)
+
+      #Initialize the variables
+      initializeTaskVars(taskInfo)
+
       taskName = taskInfo.get('taskName', None)
       if(taskName == None):
         raise Exception("No taskName.")
@@ -384,10 +422,9 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
       handleException()
       print(f"Task error: (563290) {str(err)}")
       
-
-    #No matter what happens, clean up the variables that monitor the process.
+    #Elean up the variables after the run.
     finally:
-      cleanupNonPersistVars(taskInfo)
+      cleanupTaskVars(taskInfo, False)
 
 
   

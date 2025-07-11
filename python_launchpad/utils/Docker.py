@@ -26,7 +26,7 @@ def docker(dockerCMD, expectOutput=False):
   with open(joinPath(getDataDirectory(),'DockerOut.txt'), "r") as output: 
     result = output.read()
 
-  if(not expectOutput and result != None):
-    raise Exception(result)
+  if(not expectOutput and result != None and str(result).strip() != ""):
+    raise Exception(f"Docker: got a non-none result: {result}")
   
   return result

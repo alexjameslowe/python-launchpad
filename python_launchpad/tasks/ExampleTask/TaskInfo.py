@@ -21,14 +21,26 @@ info = {
   # A validator function to look at all the arguments
   'validator':validateArgs,
 
-  # These are names of non-persistent variables that get reset at the end
-  # of a run. The default ones are RUNNING ERROR STEP WARNING GRACEFUL_EXIT PROCESS
-  # It's listed as key-value pairs. The key is the name of the variable
-  # and the value is the value that it gets initialized with.
-  'nonPersistVars':{},
-  #'nonPersistVars:['
-  #  'myVar': 0,
-  #  'myVar2': '<a-string>',
+  # These are listings for threadsafe-variables that can be written and read 
+  # by the task and the monitor. (You could write from the monitor someday when
+  # we start doing user input.) 
+  # It's self explanatory. The init is the value it gets inited with.
+  #
+  # There's three string for the behavior field.
+  #
+  #    die: the variable will only remain during the run of the task 
+  #         and be removed after
+  #
+  #    output: the variable will be available for the monitor to read 
+  #            even when the task is finished
+  #
+  #    persist: the variable will persist
+  #
+  # The default ones are RUNNING ERROR STEP WARNING GRACEFUL_EXIT PROCESS
+  'vas':[],
+  #'vars:['
+  #  { 'name':'myVar', 'init':0, 'behavior':'die'}
+  #  ...
   #  ...
   #  ...
   

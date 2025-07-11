@@ -125,10 +125,16 @@ In most modern applications, MODE_EAX is generally considered better than MODE_C
 Here's a more detailed comparison:
 MODE_EAX (Galois/Counter Mode): 
 
+## 27
+There should be an error file separate from the output file.
+If there's an error in the error file after the run is finished, then it should display the error on the monitor, and have a hook to handle it, like with an email transport or something.
+
 ## Troubleshooting:
 If, upon -init, you get this error:
 UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 517: character maps to <undefined>
 It's because a microsoft smart quote has made it's way into the sourcecode.
+
+
 
 
 
