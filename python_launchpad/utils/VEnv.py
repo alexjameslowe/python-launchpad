@@ -216,7 +216,7 @@ def initializeTaskVars(taskInfo):
     varVal = variable['init']
     varBehavior = variable['behavior']
     if(not varBehavior in getVarBehaviors()):
-      raise Exception(f'Task: {taskInfo["taskName"]}: The variable {varName} must have a behavior that is one of {','.join(getVarBehaviors())}')
+      raise Exception(f'Task: {taskInfo["taskName"]}: The variable {varName} must have a behavior that is one of {",".join(getVarBehaviors())}')
     setVar(varName, varVal)
 
   setVarsToNormal()

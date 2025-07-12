@@ -147,7 +147,7 @@ def main():
   elif(initProjectHandle != None):
     init(initProjectHandle)
 
-  elif(upgradeProject != None):
+  elif(upgradeProject):
     upgrade(PROJECT_LC_NAME)
 
   elif(wslBridgeGenerateKeys):

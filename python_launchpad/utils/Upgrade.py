@@ -83,22 +83,16 @@ def upgrade(pfx):
   
   try:
 
-    print("Step 0")
-  
+    print("** Fetching new master")
 
-    print("Step 2")
-
-    print(f"IS THIS HAPPENING {currentMasterURI}  {projectParentDir}")
     #MAke a copy of the master branch and place it the parent of the launchpad directory.
     copytree(currentMasterURI, joinPath(projectParentDir, ORIGINAL_NAME), dirs_exist_ok=True)
-    print("WLL WHAT ABOUT THIS??")
 
-    print("Step 3")
+    print("** Performing replacments")
 
     #Loop through the whole manifest of files and we're going to change
     #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
     fileManifest = readJSON(joinPath(launchpadDir, 'manifest.json'))
-    print(f"Step 3.1 what? {joinPath(launchpadDir, 'manifest.json')}")
     print(json.dumps(fileManifest))
     for file in fileManifest:
       try:
@@ -129,31 +123,22 @@ def upgrade(pfx):
     replaceInPlace(mainFile, f"from {launchpadName}.Tasks", f'from {lcpfx}_task_list')
     replaceInPlace(mainFile, f"project-name-goes-here", lcpfx)
 
-    print("Step 5")
-
     print("** Moving directories")
 
     # https://stackoverflow.com/questions/67362152/issues-with-os-rename-getting-winerror-5-access-is-denied
-    #print("** Backing up the old launchpad")    
+    print("** Backing up the old launchpad")    
     if(path.isdir(backupDir)):
       move(backupDir, backupDir+"_"+str(int(time())))
-      #xrename(backupDir, backupDir+"_"+str(int(time())))
-
-    print("Step 6")
 
     print(f"move {oldProjectDir}  {backupDir}")
     move(oldProjectDir, backupDir)
-    #xrename(oldProjectDir, backupDir)
 
-    #xrename(launchpadDir, newLaunchpadDir)
+    print("** Renaming directory")
     move(launchpadDir, newLaunchpadDir)
 
     print("** Copying settings")
     settingsFileFromOld = joinPath(backupDir, 'main.json')
     copy(settingsFileFromOld, newLaunchpadDir) 
-
-    print("Step 6")
-
 
     print("**")
     print("** Done!")
