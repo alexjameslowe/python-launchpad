@@ -46,7 +46,7 @@ def main():
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
 
   parser.add_argument('-init', help='Initialize the project', required=False, default=None)
-  parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default=None)
+  parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-cleanup-task', help='Clean up after a task has failed in an ungraceful fashion like a crash', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-refresh-deps', help='Refresh the dependencies', required=False, default="0", const="1", nargs='?')
   
@@ -69,7 +69,7 @@ def main():
   gracefulExit = args.get('graceful_exit', None) == "1"
   background = args.get('background', None) == "1"
   initProjectHandle = args.get('init', None) 
-  upgradeProjectHandle = args.get('upgrade', None)
+  upgradeProject = args.get('upgrade', None) == "1"
   listSecrets = args.get('list_secrets', None) == "1"
   wslBridgeGenerateKeys = args.get("wsl_bridge_generate_keys", None) == "1"
   wslBridgeGetPrivateKey = args.get("wsl_bridge_get_private_key", None) == "1"
@@ -147,8 +147,8 @@ def main():
   elif(initProjectHandle != None):
     init(initProjectHandle)
 
-  elif(upgradeProjectHandle != None):
-    upgrade(upgradeProjectHandle)
+  elif(upgradeProject != None):
+    upgrade(PROJECT_LC_NAME)
 
   elif(wslBridgeGenerateKeys):
     secrets = runModuleInVEnv('python_launchpad.utils.Secrets')

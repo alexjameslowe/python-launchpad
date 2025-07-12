@@ -1,3 +1,5 @@
+#git@github.com:alexjameslowe/python-launchpad.git
+
 ####################################################################################
 #
 #  An upgrade script.
@@ -12,10 +14,15 @@ from python_launchpad.utils.Format import joinPath
 from os import path, rename, system
 import subprocess
 from time import time
-from shutil import copy
-from python_launchpad.utils.Configure import getLaunchpadDirectory
+from shutil import copy, copytree, move
+from python_launchpad.utils.Configure import getLaunchpadDirectory, getDataDirectory
 from python_launchpad.utils.File import replaceInPlace, rename as xrename
 from python_launchpad.utils.Utils import readJSON
+from python_launchpad.utils.NonThreadVar import getVar
+from python_launchpad.utils.OriginalLaunchpadName import ORIGINAL_NAME
+#import requests 
+import zipfile
+import json
 
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
@@ -23,12 +30,38 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 
+# def downloadFile(url, localURI):
+#   try:
+#     response = requests.get(url, stream=True)
+#     response.raise_for_status()  # Raise an exception for non-200 status codes
+
+#     with open(localURI, 'wb') as file:
+#         for chunk in response.iter_content(chunk_size=8192):
+#             file.write(chunk)
+
+#   except requests.exceptions.RequestException as e:
+#         print(f"Error downloading file: {e}")
+
+
+# https://stackoverflow.com/questions/3451111/unzipping-files-in-python
+def unzip(zipURI, extractionDir):
+  with zipfile.ZipFile(zipURI, 'r') as zip_ref:
+      zip_ref.extractall(extractionDir)
+
+
 def upgrade(pfx):
 
+  currentMasterURI = getVar('master-branch-uri')
+
+  #downloadFile(currentMasterURI)
   lcpfx = pfx.lower()
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
   oldProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
-  backupDir = joinPath(projectParentDir, f'{lcpfx}_launchpad_backup')
+  backupDir = joinPath(getDataDirectory(), f'{lcpfx}_launchpad_backup')
+
+  #and now change the name of the launch pad to the new one.
+  launchpadDir = joinPath(projectParentDir, ORIGINAL_NAME) 
+  newLaunchpadDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
 
   print("  ")
   print("  ")
@@ -39,7 +72,8 @@ def upgrade(pfx):
   print("** ")
   print("** Upgrading with this new launchpad.")
   print("** This script will use your current tasks, data and secrets")
-  print(f"** and replace your current {lcpfx}_launchpad with this new one.")
+  print(f"** and replace your current {lcpfx}_launchpad with the current.")
+  print("** master branch.")
   print("** ")
 
   launchpadName = 'python_launchpad'
@@ -48,27 +82,36 @@ def upgrade(pfx):
     raise Exception("There is no launchpad called: {lcpfx}_launchpad")
   
   try:
-  
-    # https://stackoverflow.com/questions/67362152/issues-with-os-rename-getting-winerror-5-access-is-denied
-    print("** Backing up the old launchpad")    
-    if(path.isdir(backupDir)):
-      xrename(backupDir, backupDir+"_"+str(int(time())))
 
-    xrename(oldProjectDir, backupDir)
+    print("Step 0")
+  
+
+    print("Step 2")
+
+    print(f"IS THIS HAPPENING {currentMasterURI}  {projectParentDir}")
+    #MAke a copy of the master branch and place it the parent of the launchpad directory.
+    copytree(currentMasterURI, joinPath(projectParentDir, ORIGINAL_NAME), dirs_exist_ok=True)
+    print("WLL WHAT ABOUT THIS??")
+
+    print("Step 3")
 
     #Loop through the whole manifest of files and we're going to change
     #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
-    fileManifest = readJSON(joinPath(getLaunchpadDirectory(), 'manifest.json'))
+    fileManifest = readJSON(joinPath(launchpadDir, 'manifest.json'))
+    print(f"Step 3.1 what? {joinPath(launchpadDir, 'manifest.json')}")
+    print(json.dumps(fileManifest))
     for file in fileManifest:
       try:
         if(file == "settings.json"):
-          file = joinPath(getLaunchpadDirectory(), file)
-          replaceInPlace(file, "python_launchpad", lcpfx)
+          file = joinPath(launchpadDir, file)
+          replaceInPlace(file, ORIGINAL_NAME, lcpfx)
         else:
-          file = joinPath(getLaunchpadDirectory(), file)
-          replaceInPlace(file, "python_launchpad", f"{lcpfx}_launchpad")
+          file = joinPath(launchpadDir, file)
+          replaceInPlace(file, ORIGINAL_NAME, f"{lcpfx}_launchpad")
       except:
         raise Exception(f"Error: could not perform replacements on {file}")
+      
+    print("Step 4")
 
     #Record this because we have to make more changes to the packaging
     #when we start moving files out of the launchpad to your workspace.
@@ -76,9 +119,9 @@ def upgrade(pfx):
     launchpadName = f"{lcpfx}_launchpad"
 
     #Here's some files that have imports which will have to change.
-    configUtil = joinPath(getLaunchpadDirectory(), 'utils', f'Configure.py')
-    venvUtil = joinPath(getLaunchpadDirectory(), 'utils', f'VEnv.py')
-    mainFile = joinPath(getLaunchpadDirectory(), 'main.py')
+    configUtil = joinPath(launchpadDir, 'utils', f'Configure.py')
+    venvUtil = joinPath(launchpadDir, 'utils', f'VEnv.py')
+    mainFile = joinPath(launchpadDir, 'main.py')
 
     replaceInPlace(configUtil, f"from {launchpadName}.Info", f"from {lcpfx}_info")
     replaceInPlace(venvUtil, f"from {launchpadName}.Info", f"from {lcpfx}_info")
@@ -86,16 +129,31 @@ def upgrade(pfx):
     replaceInPlace(mainFile, f"from {launchpadName}.Tasks", f'from {lcpfx}_task_list')
     replaceInPlace(mainFile, f"project-name-goes-here", lcpfx)
 
-    print("** Installing the new launchpad")
-    #and now change the name of the launch pad to the new one.
-    launchpadDir = joinPath(projectParentDir, 'python_launchpad') 
-    newProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
+    print("Step 5")
 
-    xrename(launchpadDir, newProjectDir)
+    print("** Moving directories")
+
+    # https://stackoverflow.com/questions/67362152/issues-with-os-rename-getting-winerror-5-access-is-denied
+    #print("** Backing up the old launchpad")    
+    if(path.isdir(backupDir)):
+      move(backupDir, backupDir+"_"+str(int(time())))
+      #xrename(backupDir, backupDir+"_"+str(int(time())))
+
+    print("Step 6")
+
+    print(f"move {oldProjectDir}  {backupDir}")
+    move(oldProjectDir, backupDir)
+    #xrename(oldProjectDir, backupDir)
+
+    #xrename(launchpadDir, newLaunchpadDir)
+    move(launchpadDir, newLaunchpadDir)
 
     print("** Copying settings")
     settingsFileFromOld = joinPath(backupDir, 'main.json')
-    copy(settingsFileFromOld, newProjectDir) 
+    copy(settingsFileFromOld, newLaunchpadDir) 
+
+    print("Step 6")
+
 
     print("**")
     print("** Done!")
@@ -104,7 +162,7 @@ def upgrade(pfx):
     print("**")
     print(f"** Error: {str(e)}")
     print("**")
-    print("** Could not complete. Delete this python_launchpad and try a fresh copy.")
+    print("** Could not complete.")
 
   finally:
 

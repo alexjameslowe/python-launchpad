@@ -1,5 +1,3 @@
-#git@github.com:alexjameslowe/python-launchpad.git
-
 ####################################################################################
 #
 #  An upgrade script.
@@ -15,11 +13,9 @@ from os import path, rename, system
 import subprocess
 from time import time
 from shutil import copy
-from python_launchpad.utils.Configure import getLaunchpadDirectory, getDataDirectory
+from python_launchpad.utils.Configure import getLaunchpadDirectory
 from python_launchpad.utils.File import replaceInPlace, rename as xrename
 from python_launchpad.utils.Utils import readJSON
-import requests 
-import zipfile
 
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
@@ -27,35 +23,12 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 
-def downloadFile(url, localURI):
-  try:
-    response = requests.get(url, stream=True)
-    response.raise_for_status()  # Raise an exception for non-200 status codes
-
-    with open(localURI, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=8192):
-            file.write(chunk)
-
-  except requests.exceptions.RequestException as e:
-        print(f"Error downloading file: {e}")
-
-
-# https://stackoverflow.com/questions/3451111/unzipping-files-in-python
-def unzip(zipURI, extractionDir):
-  with zipfile.ZipFile(zipURI, 'r') as zip_ref:
-      zip_ref.extractall(extractionDir)
-
-
 def upgrade(pfx):
-
-  currentMasterURI = 'https://github.com/alexjameslowe/python-launchpad/archive/refs/heads/master.zip'
-
-  downloadFile(currentMasterURI)
 
   lcpfx = pfx.lower()
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
   oldProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
-  backupDir = joinPath(getDataDirectory(), f'{lcpfx}_launchpad_backup')
+  backupDir = joinPath(projectParentDir, f'{lcpfx}_launchpad_backup')
 
   print("  ")
   print("  ")

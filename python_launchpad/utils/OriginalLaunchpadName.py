@@ -1,0 +1,1 @@
+ORIGINAL_NAME = 'python_launchpad'

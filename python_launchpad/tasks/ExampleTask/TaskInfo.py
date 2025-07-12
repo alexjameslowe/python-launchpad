@@ -37,7 +37,7 @@ info = {
   #    persist: the variable will persist
   #
   # The default ones are RUNNING ERROR STEP WARNING GRACEFUL_EXIT PROCESS
-  'vas':[],
+  'vars':[],
   #'vars:['
   #  { 'name':'myVar', 'init':0, 'behavior':'die'}
   #  ...
