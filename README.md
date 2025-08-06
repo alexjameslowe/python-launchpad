@@ -10,18 +10,6 @@ Manages virutal-environments behind the scenes. It will install them and activat
 
 ## 3.
 Works on window and linux.
-Note: Still needs some work before it will run on linux.
-
-Windows:
-The private keys are stored in the OSs credential manager.
-Open the control panel:
-Control Panel.
-Click "System and Security"
-On the left bar, click the "User Accounts" option
-In the Credential Manager, click the "Manage Windows Credentials" option.
-Scroll down. Find the "Generic Credentials" section.
-You'll see your launchpad credentials there.
-
 
 
 ## Installation
@@ -105,18 +93,28 @@ Next, run the example task:
 python3 coolproject.py -example-task
 ```
 
+
+
 ## Adding new dependencies
-
-
-
-
 This will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment. In addition, any changes you make to the requirments in Info.py will be picked up and the virtual environent will be updated as needed.
 
 
 Add this for the Long Path instructions for Windows. 
 https://github.com/maljefairi/Windows-Long-Path
 
-# Troubleshooting
+
+## Windows Private Key Storage:
+The private keys are stored in the OSs credential manager. To see where the private key is stored:
+Open the control panel:
+Control Panel.
+Click "System and Security"
+On the left bar, click the "User Accounts" option
+In the Credential Manager, click the "Manage Windows Credentials" option.
+Scroll down. Find the "Generic Credentials" section.
+You'll see your launchpad credentials there.
+
+
+## Troubleshooting
 
 Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'.  When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
 

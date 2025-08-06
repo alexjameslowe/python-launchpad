@@ -16,7 +16,7 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Utils import readJSON 
-from python_launchpad.utils.Format import joinPath, isWindows, wslToWindowsPath
+from python_launchpad.utils.Format import joinPath, isWindows
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR, RESOLVE_LINUX_ENVIRONMENT, RESOLVE_MAC_ENVIRONMENT, RESOLVE_WINDOWS_ENVIRONMENT
 
 from sys import platform
@@ -35,12 +35,20 @@ configureInteractiveMode = False
 configureAutoJSONURI = None
 configureAutoObject = None
 
-def getHelpMsg():
-  return f"If you're having a problem with this script, contact {HELP_EMAIL} for help."
+## 
+# Check to see if a keyring backend is being used.
+#
+def getKeyringBackendStatus():
+ 
+  useKeyringBackend = getMainSetting('keyring_backend', True, True) 
+   
+  #If we're skipping the keyring backend, then we just read the private key from the file.
+  #We're treating None as true for background compatibility
+  if(useKeyringBackend == False and useKeyringBackend != None):
+    return False 
+  
+  return True
 
-def versionInfo():
-  print(f"{PRODUCT_NICE_TITLE}. Version {VERSION} Author {AUTHOR}.") 
-  print(f"See README file for details. Email {HELP_EMAIL} with any questions.")
 
 def readMainJSON():
   global mainJSONDataObj
@@ -350,6 +358,28 @@ def getServiceName():
 #
 def getUsername():
   return "default_user"
+
+##
+# get the help message   
+#
+def getHelpMsg():
+  return f"If you're having a problem with this script, contact {HELP_EMAIL} for help."
+
+###
+# Print out info 
+#
+def versionInfo():
+  print(f"{PRODUCT_NICE_TITLE}. Version {VERSION} Author {AUTHOR}.") 
+
+  if(getKeyringBackendStatus()):
+    print("Using keyring backend for secrets.")
+  else:
+    print("Not using keyring backend for secrets. Using file system instead.")
+
+  print(f"Environment: {getEnvironmentLevel0()}-{getEnvironmentLevel1()}")
+  print(f"Service name: {getServiceName()}")
+  print(f"See README file for details. Email {HELP_EMAIL} with any questions.")
+
 
 
 ###
