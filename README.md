@@ -9,10 +9,14 @@ Launches a background subprocess which completes a long-running process and show
 Manages virutal-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.5 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
 
 ## 3.
-Works on window and linux.
+Works on Window and Linux, with just a few problem areas for WSL2.
 
 
 ## Installation
+
+### Note for Windows WSL2 users:
+#### Python usually lives in /mnt/c/Program Files and if you're running the installation commands from an Ubuntu shell, you're probably going to get an error "Permission Denied" when it attempts to create the virtual environmnet. You can either make things easy on yourself and just run the installation commands in Powershell, or you can specify a python version location that your Ubuntu shell has permissions for.
+
 1. Copy python_launchpad from the source into your project folder.
 
 2. cd to your project folder.
@@ -96,7 +100,7 @@ python3 coolproject.py -example-task
 
 
 ## Adding new dependencies
-This will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment. In addition, any changes you make to the requirments in Info.py will be picked up and the virtual environent will be updated as needed.
+Open up the <project_name>_info.py make any changes to the requirements that you want. And changes you make to these requirements will be picked up and the virtual environent will be updated as needed. What will happen is that the program will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment manually, which is a huge pain.
 
 
 Add this for the Long Path instructions for Windows. 

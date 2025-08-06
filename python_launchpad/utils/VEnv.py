@@ -146,9 +146,11 @@ def createVEnv():
       raise Exception(f"Missing python_location_for_venv from settings. Env level0 = {level0}, Env level1 = {level1}")
   
     status = None
-    if(isWindows()):
+    if(isWindows()): 
+      print(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
       status = system(f'{systemPython} -m virtualenv -p "{joinPath(pythonPath, "python.exe")}" "{venvPath}"')
     else:
+      print(f'{systemPython} -m virtualenv -p "{pythonPath}" "{venvPath}"')
       status = system(f'{systemPython} -m virtualenv -p "{pythonPath}" "{venvPath}"')
 
     if(status != 0):

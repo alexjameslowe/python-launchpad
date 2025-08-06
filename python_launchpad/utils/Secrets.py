@@ -14,7 +14,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from keyring import get_password, set_password
 
-from python_launchpad.utils.Configure import getSecretsDirectory, getDataDirectory, getMainSetting, getServiceName, getUsername, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX
+from python_launchpad.utils.Configure import getSecretsEncryptedDirectory, getDataDirectory, getKeyringBackendStatus, getServiceName, getUsername, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX
 from python_launchpad.utils.Utils import readJSON, randomString
 from python_launchpad.utils.Format import isWindows, joinPath, wslToWindowsPath
 
@@ -31,22 +31,6 @@ SECRETS = None
 CACHED_DECRYPTED = None
 AES_SUFFIX = "__aes"
 SECRETS_MANIFEST = None
-
-
-## 
-# Check to see if a keyring backend is being used.
-#
-def getKeyringBackendStatus():
- 
-  useKeyringBackend = getMainSetting('keyring_backend', True, True) 
-   
-  #If we're skipping the keyring backend, then we just read the private key from the file.
-  #We're treating None as true for background compatibility
-  if(useKeyringBackend == False and useKeyringBackend != None):
-    return False 
-  
-  return True
-
 
 
 ###
@@ -241,8 +225,8 @@ def migrate_encryptManifestJSON():
   #Now we're going to encrypt the aes key *asymmetrically*
   cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
 
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"manifest.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"manifest{AES_SUFFIX}.txt")
+  cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"manifest.txt")
+  cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"manifest{AES_SUFFIX}.txt")
 
   with open(cipherTextMainURI, 'w') as s1:
     s1.write(ciphertextUTF8)
@@ -283,8 +267,8 @@ def writeSecretsManifestJSON():
   #Now we're going to encrypt the aes key *asymmetrically*
   cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
 
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"manifest.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"manifest{AES_SUFFIX}.txt")
+  cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"manifest.txt")
+  cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"manifest{AES_SUFFIX}.txt")
 
   with open(cipherTextMainURI, 'w') as s1:
     s1.write(ciphertextUTF8)
@@ -394,7 +378,7 @@ def aesSymmetricEncryptFile(privateSecretName, aesKey):
   with open(filePathToEncrypt, 'rb') as file:
     data = file.read()
   
-  encryptedFileURI = joinPath(getSecretsDirectory(), f"{publicSecretName}.enc")
+  encryptedFileURI = joinPath(getSecretsEncryptedDirectory(), f"{publicSecretName}.enc")
 
   with open(encryptedFileURI, 'wb') as encFile:
     encFile.write(cipher.nonce)
@@ -410,7 +394,7 @@ def aesSymmetricDecryptFile(privateSecretName, aesKey):
   #get the public secret name 
   publicSecretName = getPublicSecretName(privateSecretName)
 
-  encryptedFileURI = joinPath(getSecretsDirectory(), f"{publicSecretName}.enc")
+  encryptedFileURI = joinPath(getSecretsEncryptedDirectory(), f"{publicSecretName}.enc")
 
   nonce = None 
   digest = None 
@@ -484,8 +468,8 @@ def setSecret(key, value, asjson=False, asBatch=False):
   #Now we're going to encrypt the aes key *asymmetrically*
   cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
 
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{filename}.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
+  cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
+  cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
   with open(cipherTextMainURI, 'w') as s1:
     s1.write(ciphertextUTF8)
@@ -526,8 +510,8 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   #If this is the manfest itself, then the filename is just 'manifest'
   filename = getPublicSecretName(key) if(__manifest == False) else key
   
-  cipherTextMainURI = joinPath(getSecretsDirectory(), f"{filename}.txt")
-  cipherTextAESURI = joinPath(getSecretsDirectory(), f"{filename}{AES_SUFFIX}.txt")
+  cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
+  cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
   if(not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
     return defval

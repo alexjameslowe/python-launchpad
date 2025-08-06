@@ -129,7 +129,7 @@ def getLaunchpadDirectory(asObj=False):
 # get the path to the public key
 #
 def getPublicKeyPath():
-  return joinPath(getSecretsDirectory(), 'public_key.txt')
+  return joinPath(getSecretsEncryptedDirectory(), 'public_key.txt')
 
 ## 
 # get the path to the secrets directory
@@ -141,11 +141,24 @@ def getSecretsDirectory():
   
   return dir
 
+##
+# get the secrets/encrypted directory
+#
+def getSecretsEncryptedDirectory():
+  secretsDir = getSecretsDirectory()
+  encryptedDir = joinPath(secretsDir, 'encrypted')
+  if(not path.isdir(encryptedDir)):
+    mkdir(encryptedDir) 
+  
+  return encryptedDir
+
+
 ## 
 # get the path to the secret files input directory
 #
 def getSecretFilesIn():
-  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'files_in') 
+  secretsDir = getSecretsDirectory()
+  dir = joinPath(secretsDir, 'files_in') 
   if(not path.isdir(dir)):
     mkdir(dir) 
   
@@ -155,7 +168,8 @@ def getSecretFilesIn():
 # get the path to the secret files output directory
 #
 def getSecretFilesOut():
-  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'files_out') 
+  secretsDir = getSecretsDirectory()
+  dir = joinPath(secretsDir, 'files_out') 
   if(not path.isdir(dir)):
     mkdir(dir) 
   
@@ -166,7 +180,7 @@ def getSecretFilesOut():
 # get the path to the secrets directory
 #
 def getSecretsManifest():
-  manifestURI = joinPath(getSecretsDirectory(), 'manifest.json')
+  manifestURI = joinPath(getSecretsEncryptedDirectory(), 'manifest.json')
   return manifestURI
   
 
