@@ -44,7 +44,7 @@ def getKeyringBackendStatus():
    
   #If we're skipping the keyring backend, then we just read the private key from the file.
   #We're treating None as true for background compatibility
-  if(useKeyringBackend == False and useKeyringBackend != None):
+  if(useKeyringBackend == False and not useKeyringBackend is None):
     return False 
   
   return True
@@ -135,7 +135,7 @@ def getPublicKeyPath():
 # get the path to the secrets directory
 #
 def getSecretsDirectory():
-  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets', 'encrypted') 
+  dir = joinPath(getProjectDirectory(), f'{getMainSetting("launchpad_handle")}_secrets') 
   if(not path.isdir(dir)):
     mkdir(dir) 
   

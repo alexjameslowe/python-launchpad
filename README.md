@@ -1,15 +1,18 @@
 
 # Python Launchpad
-The purpose of this library is to provide a base from which you can write a python program that does three important everyday things:
+The purpose of this library is to provide a base from which you can write a program that does four important things right out of the box that are a real headache to set up each time you want a new python tool:
 
 ## 1.
 Launches a background subprocess which completes a long-running process and shows a report table to the user as its working
 
 ## 2. 
+Provides you with a way to monitor a process, as define thread-safe variables that can be set and get by both the task and the monitor.
+
+## 3. 
 Manages virutal-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.5 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
 
-## 3.
-Works on Window and Linux, with just a few problem areas for WSL2.
+## 4.
+Allows multiple configurations for multiple platforms, e.g. Linux, Windows, WSL2.
 
 
 ## Installation
@@ -120,7 +123,10 @@ You'll see your launchpad credentials there.
 
 ## Troubleshooting
 
-Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'.  When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
+### ValueError: RSA key format is not supported
+You might have made a mistake if you copied your private key over to a server. That can happen and if there's a trailing whitespace or a missing dash in delimiters, it will complain.
+
+#### Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'. When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
 
 https://foss.heptapod.net/pypy/cffi/-/issues/540
 
@@ -135,48 +141,5 @@ https://forum.seafile.com/t/seahub-fails-to-start-cffi-issue/17154
 python3 -m pip install --force-reinstall --upgrade --target <SOMEWHERE>/seafile-server-9.0.5/seahub/thirdpart cffi==1.14.6
 
 
-## Getting this working on linux (Ubuntu)
 
-Getting this error on the ubuntu server:
-keyring.errors.NoKeyringError: No recommended backend was available. Install a recommended 3rd party backend package; or, install the keyrings.alt package if you want to use the non-recommended backends. See https://pypi.org/project/keyring for details.
-
-On Linux, the KWallet backend relies on dbus-python, which does not always install correctly when using pip (compilation is needed). For best results, install dbus-python as a system package.
-https://pypi.org/project/keyring/
-
-
-
-AI response:
-
-The keyring.errors.NoKeyringError: No recommended backend was available error in Python's keyring library indicates that the library could not find a suitable backend to store and retrieve passwords or secrets in your environment. 
-Explanation: 
-The keyring library aims to provide a secure way to manage credentials by integrating with system-level keyrings or password managers (like macOS Keychain, GNOME Keyring/Secret Service on Linux, or Windows Credential Manager). When this error occurs, it means keyring was unable to detect or connect to any of these recommended, secure backends. 
-Common Causes and Solutions: 
-
-• Missing System Keyring/Password Manager: 
-	• Linux: You might be missing a desktop environment's keyring service (e.g., GNOME Keyring or KWallet) or the necessary D-Bus components. Install gnome-keyring or similar packages for your desktop environment. 
-	• Server Environments/Containers: If you're running keyring in a headless environment (like a server or Docker container) without a graphical desktop, there's no system keyring available. In this case, you'll need to either: 
-		• Install and configure a keyring daemon like gnome-keyring-daemon and manage its D-Bus session. 
-		• Consider using an alternative backend provided by keyrings.alt (see below) if security requirements allow for less robust storage. 
-
-• Missing Python Bindings for Backends: 
-	• Even if the system keyring is installed, keyring might need specific Python packages to interact with it. For instance, secretstorage is required for the Secret Service backend (used by GNOME Keyring). Ensure these are installed: 
-
-        pip install secretstorage
-
-• Virtual Environment Issues: 
-	• If you're using a virtual environment, ensure that the necessary system packages (like dbus-python) are accessible within it. You might need to create the virtual environment with the --system-site-packages flag or selectively install the required system packages within the virtual environment. 
-
-• No Recommended Backend Available (Alternative Backends): 
-	• If no recommended backend is suitable or available in your environment, you can opt to use alternative, less secure backends by installing keyrings.alt. 
-	• Caution: Backends in keyrings.alt (like PlaintextKeyring) might store credentials in plain text or less secure ways. Only use these if you understand the security implications and it aligns with your application's security requirements. 
-	• To use keyrings.alt: 
-
-        pip install keyrings.alt
-
-Then, you might need to explicitly set the desired keyring using keyring.set_keyring() in your code if the default selection doesn't pick the one you intend. 
-
-• Running as a Service/Cron Job: 
-	• When running Python scripts as system services or cron jobs, they might not have access to the user's graphical session and its associated keyring. Consider how your service or job is configured and if it has the necessary environment variables and permissions to interact with a keyring. You might need to adjust the environment or use a different credential management strategy for such scenarios. 
-
-AI responses may include mistakes.
 

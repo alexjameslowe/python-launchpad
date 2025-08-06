@@ -139,14 +139,16 @@ def dateFromYYYYMMDD(yyyymmdd):
 
 
 #A helper to format a string for interpolation into a CLI string
-def formatForCLI(dirty, escapeSingleQuote=False, escapeDoubleQuote=False):
-  clean = dirty 
+def formatForCLI(dirty, escapeSingleQuote=False, escapeDoubleQuote=False, removeSingleQuote=False, removeDoubleQuote=False):
+  clean = dirty
   if(escapeSingleQuote):
     clean = clean.replace("'", "\\'")
   if(escapeDoubleQuote):
     clean = clean.replace('"', '\\"')
-  
-  clean = clean.replace("\n", " ").replace("\r", "").strip()
+  if(removeSingleQuote):
+    clean = clean.replace("'", "")
+  if(removeDoubleQuote):
+    clean = clean.replace('"',"")
 
   return clean
 
