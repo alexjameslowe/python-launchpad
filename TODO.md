@@ -125,9 +125,46 @@ In most modern applications, MODE_EAX is generally considered better than MODE_C
 Here's a more detailed comparison:
 MODE_EAX (Galois/Counter Mode): 
 
-## 27
+## 27 
 There should be an error file separate from the output file.
 If there's an error in the error file after the run is finished, then it should display the error on the monitor, and have a hook to handle it, like with an email transport or something.
+
+Ok I did that, but all of the errors are going to the output file.
+
+This part in VEnv.py:
+
+    except ModuleNotFoundError as err:
+      handleException()
+      print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
+    except Exception as err:
+      handleException()
+      print(f"Task error: (563290) {str(err)}")
+
+What should happen is that on error it should examine the 
+
+
+## 28
+Figure out how to get a headless backend working for server environments
+https://pypi.org/project/keyring/
+
+docker run -it -d --privileged ubuntu:18.04
+
+$ apt-get update
+$ apt install -y gnome-keyring python3-venv python3-dev
+$ python3 -m venv venv
+$ source venv/bin/activate # source a virtual environment to avoid polluting your system
+$ pip3 install --upgrade pip
+$ pip3 install keyring
+$ dbus-run-session -- sh # this will drop you into a new D-bus shell
+$ echo 'somecredstorepass' | gnome-keyring-daemon --unlock # unlock the system's keyring
+
+$ python
+>>> import keyring
+>>> keyring.get_keyring()
+<keyring.backends.SecretService.Keyring object at 0x7f9b9c971ba8>
+>>> keyring.set_password("system", "username", "password")
+>>> keyring.get_password("system", "username")
+'password'
 
 ## Troubleshooting:
 If, upon -init, you get this error:

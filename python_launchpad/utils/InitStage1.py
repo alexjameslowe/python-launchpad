@@ -133,11 +133,6 @@ def init(pfx):
     print("** ")
     move(settingsFile, settingsFileDest)
 
-  print("** Making secrets directories")
-  getSecretsDirectory()
-  getSecretFilesIn()
-  getSecretFilesOut()
-
   #Now we're going to rename the launchpad to the new name e.g. "myproj_launchpad"
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
 

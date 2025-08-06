@@ -9,6 +9,9 @@ from python_launchpad.utils.Configure import getMainSetting, getDataDirectory, g
 from python_launchpad.utils.Format import joinPath
 from python_launchpad.utils.NonThreadVar import isVar, setVar, getVar, rmVar, setVarsToNormal, setVarsToThreadSafe
 from python_launchpad.Info import REQUIREMENTS, BASE_REQUIREMENTS
+from python_launchpad.utils.Constants import VENV_ERROR_FLAG
+import json
+from time import sleep
 
 SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
@@ -19,6 +22,7 @@ def handleException():
   lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
   error_string = ''.join(lines)
   print(error_string)
+  return error_string
 
 
 # Handy way to test if we're in an active venv currently
@@ -255,11 +259,23 @@ def cleanupTaskVars(taskInfo, beforeRunOrAfter):
   setVarsToNormal()
 
 
+# If we get an error at the end, then this is going
+# to write the error out to the output and then send both
+# the error and the trace to the ERROR output variable so that
+# the monitor will catch it.
+#
+def handleErrorStrings(traceString, errorMessage):
+  print(errorMessage)
+  setVarsToThreadSafe()
+  setVar('ERROR', f"{errorMessage} \n {traceString}")
+  setVarsToNormal()
+  
+
 # stop the task from running if there's already one goings.
 # 
 def bailoutIfRunning():
   setVarsToThreadSafe()
-  isRunning = getVar('RUNNING', asbool=True)
+  isRunning = (getVar('RUNNING') == "True")
   setVarsToNormal()
   if(isRunning):
     raise Exception("There's already a task running. Please wait for it to stop.")
@@ -412,16 +428,22 @@ def activate(taskInfo, gracefulExit=False, args=None, background=False, foregrou
       taskName = taskInfo.get('taskName', None)
       if(taskName == None):
         raise Exception("No taskName.")
-
+      
+      #You can raise an exception here to see how it deals with errors.
+      #raise Exception("TESTING")
+      
       module = importlib.import_module(f'{tasksModuleName}.{taskName}.Task')
       module.task(args)
     except ModuleNotFoundError as err:
-      handleException()
-      print(f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}")
+      e1 = handleException()
+      e2 = f"Module not found: (4746383) {str(err)} {tasksModuleName} {taskName}"
+      handleErrorStrings(e1, e2)
+
     except Exception as err:
-      handleException()
-      print(f"Task error: (563290) {str(err)}")
-      
+      e1 = handleException()
+      e2 = f"Task error: (563290) {str(err)}"
+      handleErrorStrings(e1, e2)
+
     #Elean up the variables after the run.
     finally:
       cleanupTaskVars(taskInfo, False)

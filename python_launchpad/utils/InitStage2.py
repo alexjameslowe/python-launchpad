@@ -10,6 +10,7 @@
 
 
 from python_launchpad.utils.Secrets import generateKeys
+from python_launchpad.utils.Configure import getSecretsDirectory, getSecretFilesIn, getSecretFilesOut
 
 def init():
 
@@ -17,10 +18,17 @@ def init():
   print(" ")
   print(" ")
   print("**********************************************************")
-  print("* ")
-  print("* Generating public and private key for secrets")
-  print("* ")
+  print("** ")
   try:
+
+    print("** Making secrets directories")
+    
+    getSecretsDirectory()
+    getSecretFilesIn()
+    getSecretFilesOut()
+
+    print("** Generating public and private key for secrets")
+    print("** ")
     generateKeys()
   except Exception as err:
     print(f"Error: {str(err)}")

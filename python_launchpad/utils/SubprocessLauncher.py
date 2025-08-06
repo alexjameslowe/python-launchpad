@@ -26,13 +26,15 @@ def launch(args, taskInfo):
   #We're going to record the process
   pid = 0
 
-  outputFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}.txt")
+  outputFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}_output.txt")
+  errorFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}_error.txt")
 
   try:
 
-    #Clear out the output file.
-    with open(outputFile, "w+") as f:
-      f.write("")
+    #Clear out the output and error files
+    with open(outputFile, "w+") as output, open(errorFile, "w+") as error:
+      output.write("")
+      error.write("")
 
     # TODO remove this
     # isRunning = getVar(RUNNING, asbool=True)
@@ -128,8 +130,8 @@ def launch(args, taskInfo):
 
     #Call the subprocess. In the past I've gone down rabbit holes with trying to do 
     #this on a daemon thread, but this always ends up being more straightforward.
-    with open(outputFile, "w") as f:
-      process = subprocess.Popen(subProcessArgs, stdout=f)
+    with open(outputFile, "w+") as output, open(errorFile, "w+") as error:
+      process = subprocess.Popen(subProcessArgs, stdout=output, stderr=error)
       pid = process.pid
 
   except Exception as e:

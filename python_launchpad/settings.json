@@ -3,23 +3,27 @@
   "windows": {
     "windows": {
       "system_python_handle":"python3",
-      "python_location_for_venv":"C:/Program Files/Python310"
+      "python_location_for_venv":"C:/Program Files/Python310",
+      "keyring_backend":true
     }
   },
   "linux": {
     "wsl2": {
       "system_python_handle":"python3",
-      "python_location_for_venv":"/mnt/c/Program Files/Python310"
+      "python_location_for_venv":"/mnt/c/Program Files/Python310",
+      "keyring_backend":true
     }, 
     "ubuntu": {
       "system_python_handle":"python3",
-      "python_location_for_venv":"/python310/location/goes/here"
+      "python_location_for_venv":"/python310/location/goes/here",
+      "keyring_backend":false
     }
   },
   "mac": {
     "mac": {
       "system_python_handle":"python3",
-      "python_location_for_venv":"/python310/location/goes/here"
+      "python_location_for_venv":"/python310/location/goes/here",
+      "keyring_backend":false
     }
   }
 }

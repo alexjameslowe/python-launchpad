@@ -20,6 +20,7 @@ from python_launchpad.utils.Format import joinPath, isWindows, wslToWindowsPath
 from python_launchpad.Info import PRODUCT_NAME, PRODUCT_NICE_TITLE, VERSION, HELP_EMAIL, AUTHOR, RESOLVE_LINUX_ENVIRONMENT, RESOLVE_MAC_ENVIRONMENT, RESOLVE_WINDOWS_ENVIRONMENT
 
 from sys import platform
+from uuid import uuid4
 
 
 filePath = path.abspath(path.dirname(__file__))
@@ -49,6 +50,8 @@ def readMainJSON():
 
     if(path.isfile(mainJSONPath)):
       mainJSONDataObj = readJSON(mainJSONPath)
+    else: 
+      raise Exception(f"Main configuration file not found at {mainJSONPath}")
 
 
 def readProfileJSON():
@@ -171,17 +174,23 @@ def getProjectDirectory(asObj=False):
 # get a main setting
 #
 #
-def getMainSetting(key, environmental=False):
+def getMainSetting(key, environmental=False, defaultToNone=False):
   readMainJSON()
 
   #just read the top-level settings if it's not from
   #the environmental data
   if(not environmental):
-    setting = mainJSONDataObj.get(key, None)
-    if(setting == None):
-      raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
-    else:
-      return setting 
+    try:
+      setting = mainJSONDataObj.get(key, None)
+      if(setting == None):
+        if(defaultToNone):
+          return None 
+        else:
+          raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
+      else:
+        return setting 
+    except Exception as err:
+      raise Exception(f"Could not get main setting for key '{key}': {str(err)}")
   
   #else, if its specific to the environment, then we're
   #going to get the level0 and level1 environment types
@@ -192,7 +201,10 @@ def getMainSetting(key, environmental=False):
     specific = mainJSONDataObj[level0][level1]
     setting = specific.get(key, None) 
     if(setting == None):
-      raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
+      if(defaultToNone):
+        return None 
+      else:
+        raise Exception(f"No setting for '{key}'. Did you run with the -config flag yet?")
     else: 
       return setting
 
@@ -211,6 +223,7 @@ def setMainSetting(key, value):
 
   except Exception as err:
     print(f"695849 Something went wrong. Could not set {value} for key: '{key}': {str(err)}")
+
 
 
 
@@ -285,14 +298,6 @@ def setProfileSetting(key, value):
 
     print(f"Set {value} for key: '{key}'")
 
-    #
-    # #If the key is the hopper directory, then we're going to make sure
-    # #that it exists.
-    # if(key == "output_dir"):
-    #   outputDirURI = rf"{value}" #For windows slashes
-    #   if(not path.isdir(outputDirURI)):
-    #     mkdir(outputDirURI)
-
   except Exception as exp:
     print(f"030495 Something went wrong. Could not set {value} for key: '{key}': {str(exp)}")
 
@@ -323,7 +328,34 @@ def writeMainJSON():
     json.dump(mainJSONDataObj, jsonFile)
     jsonFile.close()
 
+###
+# get the of the of the launchpad. If there's a uid, then use it. 
+#
+#
+def getServiceName():
+  launchHandle = getMainSetting("launchpad_handle", False, True)
+  uid = getMainSetting("uuid", False, True)
 
+  if(launchHandle == None):
+    raise Exception("launchpad_handle is missing fro the main config json")
+  
+  if(uid == None): 
+    return f'{launchHandle}_launchpad'
+  else: 
+    return f'{launchHandle}_launchpad_{uid}'
+
+##
+# get the username. 
+#
+#
+def getUsername():
+  return "default_user"
+
+
+###
+# run the configuration with the given json file.
+#
+#
 def configure(jsonURI=None):
 
   global mainJSONDataObj, profileJSONDataObj
@@ -351,6 +383,7 @@ def configure(jsonURI=None):
         raise Exception("Missing launchpad_handle in settings")
       
       mainJSONDataObj = configurationData
+      mainJSONDataObj['uuid'] = str(uuid4())
 
       writeMainJSON()
 

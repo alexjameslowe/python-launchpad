@@ -14,14 +14,14 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from keyring import get_password, set_password
 
-from python_launchpad.utils.Configure import getSecretsDirectory, getMainSetting, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX
+from python_launchpad.utils.Configure import getSecretsDirectory, getDataDirectory, getMainSetting, getServiceName, getUsername, getPublicKeyPath, getSecretFilesIn, getSecretFilesOut, getEnvironmentLevels, ENV_LINUX
 from python_launchpad.utils.Utils import readJSON, randomString
 from python_launchpad.utils.Format import isWindows, joinPath, wslToWindowsPath
 
 
 from base64 import b64decode,b64encode
 import re
-from os import path
+from os import path, remove
 import json
 import subprocess
 
@@ -33,15 +33,20 @@ AES_SUFFIX = "__aes"
 SECRETS_MANIFEST = None
 
 
-def getServiceName():
-  launchHandle = getMainSetting("launchpad_handle")
-  if(launchHandle == None):
-    raise Exception("launchpad_handle is missing fro the main config json")
+## 
+# Check to see if a keyring backend is being used.
+#
+def getKeyringBackendStatus():
+ 
+  useKeyringBackend = getMainSetting('keyring_backend', True, True) 
+   
+  #If we're skipping the keyring backend, then we just read the private key from the file.
+  #We're treating None as true for background compatibility
+  if(useKeyringBackend == False and useKeyringBackend != None):
+    return False 
   
-  return f'{launchHandle}_launchpad'
+  return True
 
-def getUsername():
-  return "default_user"
 
 
 ###
@@ -65,12 +70,30 @@ def getPublicKey():
 
     return PUBLIC_KEY
   
+##
+# Get the private key path, for instances in which there's no keyring backend available.
+#
+def getPrivateKeyPath():
+  return joinPath(getDataDirectory(), 'private_key.txt')  
+
 
 ###
 # get the private key from keyring utility
 #
 #
 def getPrivateKey():
+
+  #If we're not using a keyrind backend, then we're going to just read the private key from the file.
+  if(not getKeyringBackendStatus()):
+    pkeyPath = getPrivateKeyPath()
+    pkey = None 
+
+    with open(pkeyPath) as pkeyFile:
+      pkey = pkeyFile.read()
+      pkeyFile.close()
+    
+    return pkey 
+  
 
   # #WSL2 has problems with keyring. So what we're doing is we're going to call this on the windows side.
   level0, level1 = getEnvironmentLevels()
@@ -130,6 +153,23 @@ def writePublicKey(pubKey):
 
 
 ## 
+# Set the private key either in the keyring or in a file.
+#
+#
+def writePrivateKey(pKeyString):
+  if(getKeyringBackendStatus()):
+    # Store the private key in the keyring
+    set_password(getServiceName(), getUsername(), pKeyString)
+
+  else:
+
+    # If we're not using a keyring backend, then we write the private key to a file
+    with open(getPrivateKeyPath(), 'w') as privateKeyFile:
+      privateKeyFile.write(pKeyString)
+      privateKeyFile.close()
+
+
+## 
 # Generate the public key
 # TODO see if we can specify another password.
 #
@@ -148,9 +188,32 @@ def generateKeys(password=None):
   privateKey = key.export_key(format='PEM').decode('utf-8')
   PUBLIC_KEY = key.publickey().export_key(format='PEM').decode('utf-8')
 
-  set_password(getServiceName(), getUsername(), privateKey)
-
+  #write the keys
+  writePrivateKey(privateKey)
   writePublicKey(PUBLIC_KEY)
+
+
+# Set the private key in the keyring from outside. 
+# This is used in cases where we're copying a project to a new location
+# and we need to copy the private key over. 
+#
+# This will remove the privateKeyFile after it has been set.
+# The reason we're doing it this way is that it's not so easy to securely 
+# copy multiline strings from the command line, so we just write it to a file.
+#
+def setPrivateKey(privateKeyFile):
+  if(privateKeyFile == None):
+    raise Exception("privateKeyFile is required") 
+  
+  if(not isinstance(privateKeyFile, str)):
+    raise Exception("privateKeyFile must be a string")
+  
+  with open(privateKeyFile, 'r') as file:
+    privateKey = file.read()
+    file.close()
+
+  writePrivateKey(privateKey)
+  remove(privateKeyFile)
 
 
 

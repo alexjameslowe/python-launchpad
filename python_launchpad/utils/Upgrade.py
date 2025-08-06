@@ -19,7 +19,7 @@ from python_launchpad.utils.Configure import getLaunchpadDirectory, getDataDirec
 from python_launchpad.utils.File import replaceInPlace, rename as xrename
 from python_launchpad.utils.Utils import readJSON
 from python_launchpad.utils.NonThreadVar import getVar
-from python_launchpad.utils.OriginalLaunchpadName import ORIGINAL_NAME
+from python_launchpad.utils.Constants import ORIGINAL_NAME
 #import requests 
 import zipfile
 import json
@@ -51,7 +51,7 @@ def unzip(zipURI, extractionDir):
 
 def upgrade(pfx):
 
-  currentMasterURI = getVar('master-branch-uri')
+  currentMasterURI = getVar('master-branch-uri').strip()
 
   #downloadFile(currentMasterURI)
   lcpfx = pfx.lower()
@@ -93,7 +93,6 @@ def upgrade(pfx):
     #Loop through the whole manifest of files and we're going to change
     #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
     fileManifest = readJSON(joinPath(launchpadDir, 'manifest.json'))
-    print(json.dumps(fileManifest))
     for file in fileManifest:
       try:
         if(file == "settings.json"):
@@ -105,8 +104,6 @@ def upgrade(pfx):
       except:
         raise Exception(f"Error: could not perform replacements on {file}")
       
-    print("Step 4")
-
     #Record this because we have to make more changes to the packaging
     #when we start moving files out of the launchpad to your workspace.
     #These further replacements are below:
@@ -130,7 +127,6 @@ def upgrade(pfx):
     if(path.isdir(backupDir)):
       move(backupDir, backupDir+"_"+str(int(time())))
 
-    print(f"move {oldProjectDir}  {backupDir}")
     move(oldProjectDir, backupDir)
 
     print("** Renaming directory")

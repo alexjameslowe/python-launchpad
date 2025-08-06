@@ -1,6 +1,7 @@
 import os
 import argparse, sys
 from os import path
+from getpass import getpass
 
 #https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,25 +32,20 @@ def main():
   parser=argparse.ArgumentParser()
   parser.add_argument('-config', help='Configure the program.', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-test', help='Is this a test?', required=False, default="0", const="1", nargs='?')
-  
   parser.add_argument('-set-value', help='Whats the value of the setting youd like to set?', required=False, default=None)
-  
   parser.add_argument('-set-secret', help='What secret do you want to save?', required=False, default=None)
   parser.add_argument('-get-secret', help='You want to get a secret?', required=False, default="0", const="1", nargs='?')
-  
+  parser.add_argument('-get-private-key', help='Get the private key', required=False, default="0", const="1", nargs='?')
+  parser.add_argument('-set-private-key', help='Set the private key', required=False, default=None)
   parser.add_argument('-for-key', help='Which key do you want to set the value for?', required=False, default=None)
-  
   parser.add_argument('-list-secrets', help='List the names of the secrets', required=False, default="0", const="1", nargs='?')
-
   parser.add_argument('-v', help='Get version info', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-graceful-exit', help='Do you want to exit gracefully?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-background', help='Run the report in the background as a subprocess.', required=False, default="0", const="1", nargs='?')
-
   parser.add_argument('-init', help='Initialize the project', required=False, default=None)
   parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-cleanup-task', help='Clean up after a task has failed in an ungraceful fashion like a crash', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-refresh-deps', help='Refresh the dependencies', required=False, default="0", const="1", nargs='?')
-  
   parser.add_argument('-wsl-bridge-generate-keys', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-wsl-bridge-get-private-key', required=False, default="0", const="1", nargs='?')
 
@@ -63,7 +59,8 @@ def main():
   setSecret = args.get('set_secret', None) 
   getSecret = args.get('get_secret', None) == "1"
   forKey = args.get('for_key', None) 
-
+  getPKey = args.get('get_private_key', None) == "1"
+  setPKeyFile = args.get('set_private_key', None)
   config = args.get('config', None) == "1"
   version = args.get('v', None) == "1"
   gracefulExit = args.get('graceful_exit', None) == "1"
@@ -130,6 +127,17 @@ def main():
   #If we're setting a value in the profile data, then do that here.
   elif(setValue != None and forKey != None):
     setProfileSetting(forKey, setValue)
+
+  #Get the private key  
+  elif(getPKey): 
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    pkey = secrets.getPrivateKey()  
+    print(pkey)
+
+  elif(setPKeyFile != None):
+    secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
+    secrets.setPrivateKey(setPKeyFile)  
+    print("Private key logged")
 
   elif(setSecret != None and forKey != None):
     secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
