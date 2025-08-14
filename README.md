@@ -113,6 +113,42 @@ python3 mycoolproject.py -upgrade
 ```
 And it will pull a copy of the master branch make all the substitutions and get your settings moved over.
 
+## Secret management
+
+### Set secret
+
+```bash
+python3 mycoolproject.py -set-secret THE_SECRET_STUFF -for-key THE_NAME_OF_SECRET
+```
+
+### Overwrite secret 
+
+
+```bash
+python3 mycoolproject.py -set-secret THE_SECRET_STUFF -for-key THE_NAME_OF_SECRET -overwrite
+```
+
+### Get secret 
+
+```bash
+python3 mycoolproject.py -get-secret -for-key THE_NAME_OF_SECRET
+```
+
+### List secrets 
+
+```bash
+python3 mycoolproject.py -list-secrets
+```
+
+### In code,
+```python
+from mycoolproject_integrator.utils.Secrets import getSecret, setSecret
+
+mysecret = getSecret('THE_NAME_OF_SECRET')
+
+setSecret('THE_NAME_OF_SECRET', 'the new secret stuff', overwrite=True)
+```
+
 
 ## Adding new dependencies
 Open up the <project_name>_info.py make any changes to the requirements that you want. And changes you make to these requirements will be picked up and the virtual environent will be updated as needed. What will happen is that the program will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment manually, which is a huge pain.
