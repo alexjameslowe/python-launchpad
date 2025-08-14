@@ -37,6 +37,7 @@ def main():
   parser.add_argument('-get-secret', help='You want to get a secret?', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-get-private-key', help='Get the private key', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-set-private-key', help='Set the private key', required=False, default=None)
+  parser.add_argument('-overwrite', help="Overwrite flag for secrets", required=False, default="0", const="1", nargs="?")                          
   parser.add_argument('-for-key', help='Which key do you want to set the value for?', required=False, default=None)
   parser.add_argument('-list-secrets', help='List the names of the secrets', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-v', help='Get version info', required=False, default="0", const="1", nargs='?')
@@ -58,6 +59,7 @@ def main():
   setValue = args.get('set_value', None) 
   setSecret = args.get('set_secret', None) 
   getSecret = args.get('get_secret', None) == "1"
+  overwrite = args.get('overwrite', None) == "1"
   forKey = args.get('for_key', None) 
   getPKey = args.get('get_private_key', None) == "1"
   setPKeyFile = args.get('set_private_key', None)
@@ -141,7 +143,7 @@ def main():
 
   elif(setSecret != None and forKey != None):
     secrets = runModuleInVEnv('python_launchpad.utils.Secrets')
-    secrets.setSecret(forKey, setSecret)
+    secrets.setSecret(forKey, setSecret, False, overwrite)
 
   elif(getSecret and forKey != None):
     secrets = runModuleInVEnv('python_launchpad.utils.Secrets')

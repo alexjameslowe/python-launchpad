@@ -53,7 +53,7 @@ Open this file up. It will look like this:
   "linux": {
     "wsl2": {
       "system_python_handle":"python3",
-      "python_location_for_venv":"/mnt/c/Program Files/Python310",
+      "python_location_for_venv":"/usr/bin/python3.9",
       "keyring_backend":true
     }, 
     "ubuntu": {
@@ -100,6 +100,18 @@ Next, run the example task:
 python3 coolproject.py -example-task
 ```
 
+## Upgrading
+Upgrading is easy.
+*temporary* make a file --master-branch-uri.txt and in it, place the uri to the python_launchpad master branch. TODO make this point to github 
+
+cd into your project folder, where mycoolproject_launchpad is.
+
+Run
+
+```powershell 
+python3 mycoolproject.py -upgrade
+```
+And it will pull a copy of the master branch make all the substitutions and get your settings moved over.
 
 
 ## Adding new dependencies

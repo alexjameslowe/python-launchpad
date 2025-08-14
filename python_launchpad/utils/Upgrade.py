@@ -79,7 +79,7 @@ def upgrade(pfx):
   launchpadName = 'python_launchpad'
     
   if(not path.isdir(oldProjectDir)): 
-    raise Exception("There is no launchpad called: {lcpfx}_launchpad")
+    raise Exception(f"There is no launchpad called: {lcpfx}_launchpad: This is not a directory: {oldProjectDir}")
   
   try:
 

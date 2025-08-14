@@ -32,6 +32,9 @@ CACHED_DECRYPTED = None
 AES_SUFFIX = "__aes"
 SECRETS_MANIFEST = None
 
+class SecretOverwriteException(Exception):
+  pass
+
 
 ###
 # get the public key
@@ -285,21 +288,33 @@ def writeSecretsManifestJSON():
 # This will also update the SECRETS_MANIFEST global variable.
 # This will re-encrypt the manifest file.
 #
-def addNewPrivateSecretNameToManifest(key):
+def addNewPrivateSecretNameToManifest(key, overwrite=False):
   readSecretsManifestJSON()
 
   found = False
+  existingRecord = None
   for record in SECRETS_MANIFEST:
     existingName = record["name"]
     if(existingName == key):
       found = True 
+      existingRecord = record
 
   if(not found):
     newRecord = {'name':key, 'randname':randomString(10)} 
     SECRETS_MANIFEST.append(newRecord)
     writeSecretsManifestJSON()
+  
+  #Else, if it was found, then we'll have to see if we can overwrite it or not
   else:
-    raise Exception(f'Secret already exists for key: {key}')  
+
+    if(overwrite):
+      existingRecord['name'] = key 
+      existingRecord['randname'] = randomString(10)
+      writeSecretsManifestJSON()
+     
+    else:
+      raise SecretOverwriteException(f'Secret for key {key} already exists. If you want to overwrite, use the -overwrite flag in CLI or the overwrite parameter if code.')
+ 
 
 
 # Get the actual name of the file from the manifest.
@@ -437,7 +452,7 @@ def aesSymmetricDecryptFile(privateSecretName, aesKey):
 # with RSA encryption.
 # https://stackoverflow.com/questions/65856980/python-rsa-message-encryption-plaintext-is-too-long
 #
-def setSecret(key, value, asjson=False, asBatch=False):
+def setSecret(key, value, asjson=False, overwrite=False):
 
   aesPosInKey = None
   try: 
@@ -445,41 +460,58 @@ def setSecret(key, value, asjson=False, asBatch=False):
   except:
     pass 
 
-  if(not re.match( r'^([A-Za-z0-9_\-]+)$', key)):
-    raise Exception(f"Key must be letters, numbers, _ or -. You passed in. {key}")
+  try:
 
-  #Why did the user do that? Complain.
-  if(aesPosInKey != None):
-    raise Exception(f"You can't have a key with the string {AES_SUFFIX}")
-  
-  #Add a new key to the manifest file and re-encrypt it.
-  addNewPrivateSecretNameToManifest(key)
+    if(not re.match( r'^([A-Za-z0-9_\-]+)$', key)):
+      raise Exception(f"Key must be letters, numbers, _ or -. You passed in. {key}")
 
-  #Get the filename that we're using
-  filename = getPublicSecretName(key)
+    #Why did the user do that? Complain.
+    if(aesPosInKey != None):
+      raise Exception(f"You can't have a key with the string {AES_SUFFIX}")
 
-  #We first encrypt text symmetrically. 
-  ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
+    #If we're supposed to overwrite the old file, then we're going to remove the old files  
+    # if(overwrite):
+    #   oldFilename = getPublicSecretName(key)
+    #   oldCipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{oldFilename}.txt")
+    #   oldCipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{oldFilename}{AES_SUFFIX}.txt")
+    #   if(path.isfile(oldCipherTextAESURI)):
+    #     remove(oldCipherTextAESURI)
+    #   if(path.isfile(oldCipherTextMainURI)):
+    #     remove(oldCipherTextMainURI)
 
-  publicKeyObj = RSA.importKey(getPublicKey())
+    #Add a new key to the manifest file and re-encrypt it.
+    addNewPrivateSecretNameToManifest(key, overwrite)
 
-  cipherRSA = PKCS1_OAEP.new(publicKeyObj)
+    #Get the filename that we're using
+    filename = getPublicSecretName(key)
 
-  #Now we're going to encrypt the aes key *asymmetrically*
-  cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
+    #We first encrypt text symmetrically. 
+    ciphertextUTF8, aesKey = aesSymmetricEncrypt(str(value) if asjson == False else json.dumps(value))
 
-  cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
-  cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
+    publicKeyObj = RSA.importKey(getPublicKey())
 
-  with open(cipherTextMainURI, 'w') as s1:
-    s1.write(ciphertextUTF8)
-  s1.close()
+    cipherRSA = PKCS1_OAEP.new(publicKeyObj)
 
-  with open(cipherTextAESURI, 'w') as s2:
-    s2.write(cipherTextUTFOfAESKey)
-  s2.close()
+    #Now we're going to encrypt the aes key *asymmetrically*
+    cipherTextUTFOfAESKey = b64encode( cipherRSA.encrypt( aesKey ) ).decode("utf-8")
 
+    cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
+    cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
+    with open(cipherTextMainURI, 'w') as s1:
+      s1.write(ciphertextUTF8)
+    s1.close()
+
+    with open(cipherTextAESURI, 'w') as s2:
+      s2.write(cipherTextUTFOfAESKey)
+    s2.close()
+
+  except Exception as err:
+    print(f"Error setSecret: {str(err)}")
+  except SecretOverwriteException as err:
+    print("---------------------------------------")
+    print(str(err))
+    print("---------------------------------------")
 
 
 
