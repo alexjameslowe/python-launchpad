@@ -219,7 +219,10 @@ def initializeTaskVars(taskInfo):
 
   for variable in allVars:
     varName = variable['name']
-    varVal = variable['init']
+    #This has to be serialized to string or else we get weirdness  
+    #When we initialize with 0 of false. TODO iron this out. setVar should be able to just 
+    #work in dumb-mode
+    varVal = str(variable['init'])
     varBehavior = variable['behavior']
     if(not varBehavior in getVarBehaviors()):
       raise Exception(f'Task: {taskInfo["taskName"]}: The variable {varName} must have a behavior that is one of {",".join(getVarBehaviors())}')

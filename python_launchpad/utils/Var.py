@@ -135,6 +135,9 @@ def getVar(varName, defval=None, asjson=False, asint=False, asbool=False, asfloa
   with portalocker.Lock(getVarURI(varName), 'r') as f:
     varContents = f.read()
 
+  if(varContents == "None"): 
+    return defval
+
   if(asjson):
     return {} if varContents == None or varContents == 'None' else json.loads(varContents)
   elif(asint):

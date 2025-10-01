@@ -158,13 +158,26 @@ $ pip3 install keyring
 $ dbus-run-session -- sh # this will drop you into a new D-bus shell
 $ echo 'somecredstorepass' | gnome-keyring-daemon --unlock # unlock the system's keyring
 
-$ python
+```bash
 >>> import keyring
 >>> keyring.get_keyring()
 <keyring.backends.SecretService.Keyring object at 0x7f9b9c971ba8>
 >>> keyring.set_password("system", "username", "password")
 >>> keyring.get_password("system", "username")
 'password'
+```
+
+## 29
+Typing of arguments is a mess.
+If you define the default value of a variable, then the type coming out of the args kvp should be the same type. Dates should be dates, ints should be ints etc. If you need to raw string value, then there should be an entry in the args kvp "*_raw" e.g. if it's my date, then args['mydate'] will be a date, but args['mydate_raw'] will be the string in yyyymmdd form.
+
+## 30
+We really need to split the code up between code that runs "normally" and code that's supposed to run in the venv. 
+
+## 31 
+Need to pull together the keyring stuff a bit better. The secret files shouldn't have this __aes thing. The names of the files should just be all goobeldygook. The manifest will keep it all straight, and it's __aes thing will just be that the file is internally delimited that way, with some delimiter string to separate the aes and non-aes parts.
+
+
 
 ## Troubleshooting:
 If, upon -init, you get this error:
@@ -209,9 +222,6 @@ filename = "image.png"
 
 encrypt_png(key, filename)
 ```
-
-
-
 
 ## Windows Credential Manager
 

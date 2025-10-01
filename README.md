@@ -171,10 +171,35 @@ You'll see your launchpad credentials there.
 
 ## Troubleshooting
 
+### Deployment headaches. Here's what went wrong:
+### windows Error: Invalid \escape:
+
+First thing that went wrong is that when you try and put these urls into 
+the json setting file using the windows-style delimiter:
+C:\Users\carolann\AppData\Local\Programs\Python\Python310
+
+You can this "Invalid \escape" error. You need to reverse the slashes:
+C:/Users/carolann/AppData/Local/Programs/Python/Python310
+
+In the main.json and all your settings files.
+
+Other thinggs that went wrong.
+
+### The ps scripts had python3 hardcoded. 
+> This needs to use the setting system_python_handle
+
+### -get-private-key
+> Another thing that went wrong is -get-private-key cut off the top line with the damn BEGIN PRIVATE RSA KEY delimiter. I had to put it back in and then hope to god that no other lines were cut off. So that's a big headache
+
 ### ValueError: RSA key format is not supported
-You might have made a mistake if you copied your private key over to a server. That can happen and if there's a trailing whitespace or a missing dash in delimiters, it will complain.
+> You might have made a mistake if you copied your private key over to a server. That can happen and if there's a trailing whitespace or a missing dash in delimiters, it will complain.
+
+### Pip exits error 1 installation failed.
+When you run a command after tinkering with the dependencies and then scary things happen when the environment refreshes like wheels fail during build, or it says installation failed at the end, it just means that your virtual environment is messed up. Go into the <my-proj>_data/vars and delete the hex-digest file, and then also go into <my_proj>_data and delete the virtual environment. The launcher will rebuild it next time you run it with any flag.
+
 
 #### Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'. When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
+> You have to just run launcher with the -refresh-deps flag.
 
 https://foss.heptapod.net/pypy/cffi/-/issues/540
 
@@ -188,6 +213,40 @@ No dice I tried that.
 https://forum.seafile.com/t/seahub-fails-to-start-cffi-issue/17154
 python3 -m pip install --force-reinstall --upgrade --target <SOMEWHERE>/seafile-server-9.0.5/seahub/thirdpart cffi==1.14.6
 
+Everyone including the ai says to do this:
+sudo apt update
+apt --fix-broken install
+sudo apt install python3-dev
+
+https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory
+---- Excerpt
+
+mportant Note: python3-dev/devel does not automatically cover all minor versions of python3.
+E.g If you are using python 3.11 you may need to install python3.11-dev / python3.11-devel.
+
+---------------/
+
+Ok what I'm doing now I removed the hex-digest from the data/vars directory and I just deleted the venv in the data directory. Now I'm just going to rebuild it. Something just went wrong there and I don't know what.
+
+Ok well it solved the problem with the wheels not building.
+
+https://stackoverflow.com/questions/58552666/exception-version-mismatch-this-is-the-cffi-package-version-1-13-1
+pip3 install --upgrade pip
+
+sudo apt-get install python-cffi
+sudo apt-get install python3-cffi
+
+python versions are here: /usr/bin/
 
 
+
+sudo apt install python3.9
+sudo update-alternatives --set python3 /usr/bin/python3.9
+No, that didn't work.
+
+https://askubuntu.com/questions/1272870/how-can-i-change-the-default-python-on-my-ubuntu-20-04-to-python3-8
+
+alias python='/usr/bin/python3.9'
+
+I added that line to ~/.bashrc with vi. Restarted the Ubuntu shell.
 

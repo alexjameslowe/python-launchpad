@@ -112,7 +112,9 @@ def launch(args, taskInfo):
             argValue = originalArgVal
 
           subProcessArgs.append(argNameFlagCase)
-          subProcessArgs.append(argValue)
+          #have to convert to string or else you're going to get complaints 
+          #when you concatenate the args into a command and run it.
+          subProcessArgs.append(str(argValue))
 
   
 

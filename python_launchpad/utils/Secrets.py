@@ -452,7 +452,7 @@ def aesSymmetricDecryptFile(privateSecretName, aesKey):
 # with RSA encryption.
 # https://stackoverflow.com/questions/65856980/python-rsa-message-encryption-plaintext-is-too-long
 #
-def setSecret(key, value, asjson=False, overwrite=False):
+def setSecret(key, value, asjson=False, overwrite=True):
 
   aesPosInKey = None
   try: 
