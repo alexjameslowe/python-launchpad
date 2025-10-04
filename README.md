@@ -169,7 +169,7 @@ Scroll down. Find the "Generic Credentials" section.
 You'll see your launchpad credentials there.
 
 
-## Troubleshooting
+## Troubleshooting / Workflows
 
 ### Deployment headaches. Here's what went wrong:
 ### windows Error: Invalid \escape:
@@ -188,6 +188,25 @@ Other thinggs that went wrong.
 ### The ps scripts had python3 hardcoded. 
 > This needs to use the setting system_python_handle
 
+### Switching python versions on your host machine
+Linux:
+
+Note that python generally lives here: 
+python versions are here: /usr/bin/
+
+sudo apt install python3.9
+
+Then add this line into ~/.bashrc with vi or nano or whatever:
+
+alias python='/usr/bin/python3.9'
+
+Now close down your host and reopen. You can verify the changes took ahold by typing 
+
+python -V 
+
+To make sure that the version is what you expect to see.
+
+
 ### -get-private-key
 > Another thing that went wrong is -get-private-key cut off the top line with the damn BEGIN PRIVATE RSA KEY delimiter. I had to put it back in and then hope to god that no other lines were cut off. So that's a big headache
 
@@ -198,55 +217,39 @@ Other thinggs that went wrong.
 When you run a command after tinkering with the dependencies and then scary things happen when the environment refreshes like wheels fail during build, or it says installation failed at the end, it just means that your virtual environment is messed up. Go into the <my-proj>_data/vars and delete the hex-digest file, and then also go into <my_proj>_data and delete the virtual environment. The launcher will rebuild it next time you run it with any flag.
 
 
-#### Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'. When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
-> You have to just run launcher with the -refresh-deps flag.
+### Exception: Version mismatch: this is the 'cffi' package version 1.17.1, located in '/blah/venv_linux_wsl2/lib/python3.9/site-packages/cffi/api.py'. When we import the top-level '_cffi_backend' extension module, we get version 1.14.0, located in '/usr/lib/python3/dist-packages/_cffi_backend.cpython-38-x86_64-linux-gnu.so'.  The two versions should be equal; check your installation.
 
-https://foss.heptapod.net/pypy/cffi/-/issues/540
+The workaround I used was to just start using python3.9 in my Ubuntu host. That might leave a bad taste I know. The whole point of venvs is that they're SEPARATE from the host. Well, this is weird frayed edge on that. Anyway you have to switch your host OS to use a version of python closer to what you have in your launcher. In my case python3.9 worked. See the above note on how to switch versions of python on your host. That should do the trick. Also, you might try that --force-reinstall and target the troublesome location of the old cffi on your host. But swtiching python versions entirely is probably cleaner.
 
-I tried adding the cffi 1.14 dependency to the linux wsl2, in the project info.py file but it didn't work.
+Below is some more fixes that I read about. I'm not saying they won't work, I just didn't have any luck with them.
 
-https://dev.to/ask_dba/comment/jnd9
-sudo pip3 install cffi==1.14
+First, you'll be tempted to add the cffi 1.14 dependency to the linux wsl2 in the project info.py file but it will not only not work, but it will cause that environment to start throwing errors on builds.
 
-No dice I tried that.
+sudo pip3 install cffi==1.17.1
 
-https://forum.seafile.com/t/seahub-fails-to-start-cffi-issue/17154
-python3 -m pip install --force-reinstall --upgrade --target <SOMEWHERE>/seafile-server-9.0.5/seahub/thirdpart cffi==1.14.6
+*You know, this might be worth another shot*
+sudo pip3 install --force-reinstall --upgrade --target <path to the place where the bad version of cffi is living> cffi==1.17.1
 
-Everyone including the ai says to do this:
+Alot of places including the ai say to do this:
+
 sudo apt update
 apt --fix-broken install
 sudo apt install python3-dev
+sudo apt install python3.8-dev
 
-https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory
----- Excerpt
+But it had no effect.
 
-mportant Note: python3-dev/devel does not automatically cover all minor versions of python3.
-E.g If you are using python 3.11 you may need to install python3.11-dev / python3.11-devel.
+*Literature on the problem*
 
----------------/
-
-Ok what I'm doing now I removed the hex-digest from the data/vars directory and I just deleted the venv in the data directory. Now I'm just going to rebuild it. Something just went wrong there and I don't know what.
-
-Ok well it solved the problem with the wheels not building.
-
+install python-cffi
 https://stackoverflow.com/questions/58552666/exception-version-mismatch-this-is-the-cffi-package-version-1-13-1
-pip3 install --upgrade pip
 
-sudo apt-get install python-cffi
-sudo apt-get install python3-cffi
+install cffi 
+https://forum.seafile.com/t/seahub-fails-to-start-cffi-issue/17154
+https://dev.to/ask_dba/comment/jnd9
 
-python versions are here: /usr/bin/
-
-
-
-sudo apt install python3.9
-sudo update-alternatives --set python3 /usr/bin/python3.9
-No, that didn't work.
-
+changing python versions
 https://askubuntu.com/questions/1272870/how-can-i-change-the-default-python-on-my-ubuntu-20-04-to-python3-8
 
-alias python='/usr/bin/python3.9'
-
-I added that line to ~/.bashrc with vi. Restarted the Ubuntu shell.
-
+python3-dev
+https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory

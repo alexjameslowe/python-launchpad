@@ -2,7 +2,7 @@ from sys import platform
 from os import path 
 import sys
 from math import isnan
-from datetime import date
+from datetime import date, datetime
 from pathlib import PureWindowsPath, PurePosixPath, Path
 import subprocess
 
@@ -116,6 +116,20 @@ def excelColumn(col):
         col, rem = divmod(col-1, 26)
         result[:0] = LETTERS[rem]
     return ''.join(result)
+
+#Is date a saturday? will default to today
+def isDateSaturday(dateObj=None):
+  d = dateObj or datetime.today()
+  dayOfWeek = d.weekday() # Monday is 0, Sunday is 6
+  return dayOfWeek == 5
+
+
+#Get yyyy-mm-dd from a dateObj or today
+def dateToYYYYMMDD(dateObj=None, delimiter="-"):
+  if(dateObj == None):
+    return datetime.today().strftime(f'%Y{delimiter}%m{delimiter}%d')
+  else: 
+    return dateObj.strftime(f'%Y{delimiter}%m{delimiter}%d')
 
 
 #A helper function to get a date object out of a yyyy-mm-dd string

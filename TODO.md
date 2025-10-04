@@ -177,6 +177,11 @@ We really need to split the code up between code that runs "normally" and code t
 ## 31 
 Need to pull together the keyring stuff a bit better. The secret files shouldn't have this __aes thing. The names of the files should just be all goobeldygook. The manifest will keep it all straight, and it's __aes thing will just be that the file is internally delimited that way, with some delimiter string to separate the aes and non-aes parts.
 
+## 34
+Need to have docker backend where will will create images instead of venvs. I say that after dealing with this damn cffi problem for a long time today.
+
+## 35
+The upgrade has to work in WSL2
 
 
 ## Troubleshooting:
