@@ -20,6 +20,13 @@ Allows multiple configurations for multiple platforms, e.g. Linux, Windows, WSL2
 ### Note for Windows WSL2 users:
 #### Python usually lives in /mnt/c/Program Files and if you're running the installation commands from an Ubuntu shell, you're probably going to get an error "Permission Denied" when it attempts to create the virtual environmnet. You can either make things easy on yourself and just run the installation commands in Powershell, or you can specify a python version location that your Ubuntu shell has permissions for.
 
+0. On your other machine, make sure that python has virtualenv installed:
+python -m pip install --user virtualenv
+The server must have git if you're going to include your dependencies like git+github.com/blah-blah.git
+
+Windows Task Scheduler.
+If you ever have to reschedule, note that if you do it the first time and set it to activated in a future date e.g. tomorrow morning, then it won't appear in the scheduled tasks window, which is really annoying,
+
 1. Copy python_launchpad from the source into your project folder.
 
 2. cd to your project folder.
@@ -33,7 +40,7 @@ python_launchpad/
 <project-name-here> is a standin for a project handle that you decide. Python Launchpad will add some files to your project directory and this handle is a convenience so that you can easily distinguish launchpad files from other things in your directory. E.g., there will be a "coolproject_info.py", "coolproject_tasks.py" etc.
 
 ```powershell
-python3 .\python-launchpad\main.py -init coolproject
+python3 .\python_launchpad\main.py -init coolproject
 ```
 
 You'll notice that some files appear, among them coolproject_settings.json.
@@ -149,9 +156,25 @@ mysecret = getSecret('THE_NAME_OF_SECRET')
 setSecret('THE_NAME_OF_SECRET', 'the new secret stuff', overwrite=True)
 ```
 
+### Show private key
+
+```bash
+python3 mycoolproject.py -get-private-key
+```
+
+### Cleanup task 
+```bash
+python mycoolproject.py -cleanup-task -my-cool-task
+```
+This is for when the task crashes in some messy or unexpected way
+
+
 
 ## Adding new dependencies
 Open up the <project_name>_info.py make any changes to the requirements that you want. And changes you make to these requirements will be picked up and the virtual environent will be updated as needed. What will happen is that the program will build your virtual enviornment in an out-of-the way location and allow you to directly call your commands without needing to invoke a virtual environment manually, which is a huge pain.
+
+Yes, you can do this in a requirments slot:
+"git+https://github.com/mailchimp/mailchimp-marketing-python.git"
 
 
 Add this for the Long Path instructions for Windows. 
@@ -168,8 +191,19 @@ In the Credential Manager, click the "Manage Windows Credentials" option.
 Scroll down. Find the "Generic Credentials" section.
 You'll see your launchpad credentials there.
 
+When you do a deployment to another machine, what you have to do is run -get-private-key on your machine to output the private key to the screen, and then use -set-private-key
+
 
 ## Troubleshooting / Workflows
+
+### Windows python version headaches.
+pip install virtualenv
+It said that I virtualenv.exe was located in C:\Users\AlexLowe\AppData\Roaming\Python\Python310\Scripts
+And that should be added to PATH. So I added it to the path environment variable near the top.
+
+### Windows _win32sysloader
+If it complains that this is missing, chances are you're trying to use this with an older python version (3.8). I've seen this when trying to use watchdog. The solution is to just not use this old python version and use 3.10. 3.8 Just won't work.
+
 
 ### Deployment headaches. Here's what went wrong:
 ### windows Error: Invalid \escape:

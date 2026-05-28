@@ -21,6 +21,10 @@ info = {
   # A validator function to look at all the arguments
   'validator':validateArgs,
 
+  # Do we want to retain the history of the output and error files? 
+  # If false (default) the those files will be truncated at the start of every run
+  'retainHistory': False,
+
   # These are listings for threadsafe-variables that can be written and read 
   # by the task and the monitor. (You could write from the monitor someday when
   # we start doing user input.) 

@@ -6,6 +6,7 @@ import json
 import traceback
 from datetime import datetime
 
+
 from python_launchpad.utils.Configure import getDataDirectory, getPythonExecutable
 from python_launchpad.utils.Format import joinPath, dashCaseToFlagCase
 
@@ -26,20 +27,33 @@ def launch(args, taskInfo):
   #We're going to record the process
   pid = 0
 
+  retainHistory = taskInfo.get('retainHistory', False)
+
   outputFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}_output.txt")
   errorFile = joinPath(getDataDirectory(), f"{taskInfo.get('taskName', None)}_error.txt")
 
   try:
 
-    #Clear out the output and error files
-    with open(outputFile, "w+") as output, open(errorFile, "w+") as error:
-      output.write("")
-      error.write("")
+    fileMode = "a" if retainHistory else "w+"
+    now = datetime.now()
+    dateStr = now.strftime("%Y-%m-%d %H:%M:%S")
+    openingString =  f"{taskInfo['taskName']}: {dateStr}{ ' (retaining history)' if retainHistory else '' }"
 
-    # TODO remove this
-    # isRunning = getVar(RUNNING, asbool=True)
-    # if(isRunning):
-    #   raise Exception("There's already a report running. Please wait for it to stop.")
+    #Clear out the output and error files
+    with open(outputFile, fileMode) as output, open(errorFile, fileMode) as error:
+      output.write("\r\n")
+      output.write("\r\n")
+
+      output.write("*****************************************")
+      output.write("\r\n")
+      output.write(f"OUTPUT: {openingString}")
+      output.write("\r\n")
+
+      error.write("*****************************************")
+      error.write("\r\n")
+      error.write(f"ERROR: {openingString}")
+      error.write("\r\n")
+
 
     # #TODO make this work with linux  
     # #ALEX-20250304
@@ -132,7 +146,7 @@ def launch(args, taskInfo):
 
     #Call the subprocess. In the past I've gone down rabbit holes with trying to do 
     #this on a daemon thread, but this always ends up being more straightforward.
-    with open(outputFile, "w+") as output, open(errorFile, "w+") as error:
+    with open(outputFile, "a") as output, open(errorFile, "a") as error:
       process = subprocess.Popen(subProcessArgs, stdout=output, stderr=error)
       pid = process.pid
 

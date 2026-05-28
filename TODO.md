@@ -183,12 +183,55 @@ Need to have docker backend where will will create images instead of venvs. I sa
 ## 35
 The upgrade has to work in WSL2
 
+## 36
+Ok so deployment is... it's just awful. I just spend an hour trying to do it and it was just terrible. Also, this business with THREE json files. No... That's just terrible. Also, I found that I had to explicitly set the "keyring_backend" to false on the main.json file for the ubuntu settings or else it wants to use the backend which of course will fail because I don't know how to do that yet.
+
+## 37
+Tried an argument 'test' and it complained. 'testrun' worked fine. So test is reserved and it should complain.
+
+## 38
+It didn't show an error when I had paramiko in the task but i didn't actually include it. The error showed up in the output. Figure that out. Errors should always get reported to the client
+
+## 39
+It should be able to respond gracefully to a keyboard interrupt and reset the variables and everything.
+
+## 40
+This
+  'args': [
+      
+    {
+      'name':'testrun',
+      'help':'This is a test-run of the script',
+      'flag':True
+    },
+The flag is always being reported as 1. This isn't right. flag should just be boolean and it should be super easy to get that from the args
+
+## 41 
+Needs to support keyboard-interrupt and it should definitely wipe the variables when its done
+
+## 42
+set-private-key need to make sure that the path that you put in here can be relative to the cwd, or absolute.
+
+
+## 43 
+Incorporate this 
+
+def is_time_between(now, start, end):
+    if start <= end:
+        return start <= now <= end
+    else:
+        # crosses midnight
+        return now >= start or now <= end
 
 ## Troubleshooting:
 If, upon -init, you get this error:
 UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 517: character maps to <undefined>
 It's because a microsoft smart quote has made it's way into the sourcecode.
 
+## 44
+We need some kind of a thing where we know what arguments are printable and which are sensitive. 
+there needs to be some kind of a filter so that you're never accessing task arguments directly, there's a helper object that's doing that.
+When you print, it would internally switch to a mode where the helper object switches to a mode where it will redact the sensitive cli arguments. This is so that we can safely retain logs of past runs without worrying about unsafe arguments getting passed.
 
 
 
