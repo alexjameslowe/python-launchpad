@@ -11,16 +11,16 @@
 
 from sys import path as syspath 
 from python_launchpad.utils.Format import joinPath
-from os import path, rename, system
+from os import path, rename, system, mkdir
 import subprocess
 from time import time
-from shutil import copy, copytree, move
+from shutil import copy, copytree, move, rmtree
 from python_launchpad.utils.Configure import getLaunchpadDirectory, getDataDirectory
 from python_launchpad.utils.File import replaceInPlace, rename as xrename
 from python_launchpad.utils.Utils import readJSON
 from python_launchpad.utils.NonThreadVar import getVar
 from python_launchpad.utils.Constants import ORIGINAL_NAME
-#import requests 
+import requests 
 import zipfile
 import json
 
@@ -30,30 +30,36 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 
-# def downloadFile(url, localURI):
-#   try:
-#     response = requests.get(url, stream=True)
-#     response.raise_for_status()  # Raise an exception for non-200 status codes
+#This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python_launchpad
+def downloadMasterBranchToData():
 
-#     with open(localURI, 'wb') as file:
-#         for chunk in response.iter_content(chunk_size=8192):
-#             file.write(chunk)
+  localZipURI = joinPath(getDataDirectory(), 'python-launchpad.zip')
+  localExpandToURI = joinPath(getDataDirectory(), 'python-launchpad-master')
+  masterBranchRemoteZipURL = 'https://github.com/alexjameslowe/python-launchpad/archive/refs/heads/master.zip'
 
-#   except requests.exceptions.RequestException as e:
-#         print(f"Error downloading file: {e}")
+  # https://stackoverflow.com/questions/3451111/unzipping-files-in-python
+  # https://www.codementor.io/@aviaryan/downloading-files-from-urls-in-python-77q3bs0un
+  response = requests.get(masterBranchRemoteZipURL, allow_redirects=True)
+  open(localZipURI, 'wb').write(response.content)
 
+  if(path.isdir(localExpandToURI)):
+    rmtree(localExpandToURI)
 
-# https://stackoverflow.com/questions/3451111/unzipping-files-in-python
-def unzip(zipURI, extractionDir):
-  with zipfile.ZipFile(zipURI, 'r') as zip_ref:
-      zip_ref.extractall(extractionDir)
+  if(not path.isdir(localExpandToURI)):
+    mkdir(localExpandToURI)
+
+  with zipfile.ZipFile(localZipURI, 'r') as zip_ref:
+      zip_ref.extractall(localExpandToURI)
 
 
 def upgrade(pfx):
 
-  currentMasterURI = getVar('master-branch-uri').strip()
-
+  #currentMasterURI = getVar('master-branch-uri').strip()
   #downloadFile(currentMasterURI)
+
+  ##This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python_launchpad
+  downloadMasterBranchToData()
+
   lcpfx = pfx.lower()
   projectParentDir = str(getLaunchpadDirectory(asObj=True).parents[0])
   oldProjectDir = joinPath(projectParentDir, f'{lcpfx}_launchpad')
@@ -85,8 +91,10 @@ def upgrade(pfx):
 
     print("** Fetching new master")
 
-    #MAke a copy of the master branch and place it the parent of the launchpad directory.
-    copytree(currentMasterURI, joinPath(projectParentDir, ORIGINAL_NAME), dirs_exist_ok=True)
+    newCopiedPythonLauncpadFromMasterURI = joinPath(getDataDirectory(), 'python-launchpad-master', 'python-launchpad-master', 'python_launchpad')
+
+    #Make a copy of the master branch and place it the parent of the launchpad directory.
+    copytree(newCopiedPythonLauncpadFromMasterURI, joinPath(projectParentDir, ORIGINAL_NAME), dirs_exist_ok=True)
 
     print("** Performing replacments")
 

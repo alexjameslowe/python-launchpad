@@ -9,7 +9,7 @@ Launches a background subprocess which completes a long-running process and show
 Provides you with a way to monitor a process, as define thread-safe variables that can be set and get by both the task and the monitor.
 
 ## 3. 
-Manages virutal-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.9 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
+Manages virtual-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.9 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
 
 ## 4.
 Allows multiple configurations for multiple platforms, e.g. Linux, Windows, WSL2.
