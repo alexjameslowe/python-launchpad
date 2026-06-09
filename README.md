@@ -1,6 +1,6 @@
 
 # Python Launchpad
-The purpose of this library is to provide a base from which you can write a program that does four important things right out of the box that are a real headache to set up each time you want a new python tool:
+This is a work-in-progress. The aim is to provide a base from which you can write a program that does four important things right out of the box that are a real headache to set up each time you want a new python tool:
 
 ## 1.
 Launches a background subprocess which completes a long-running process and shows a report table to the user as its working
@@ -9,7 +9,7 @@ Launches a background subprocess which completes a long-running process and show
 Provides you with a way to monitor a process, as define thread-safe variables that can be set and get by both the task and the monitor.
 
 ## 3. 
-Manages virutal-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.5 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
+Manages virutal-environments behind the scenes. It will install them and activate them behind the scenes so that you don't have to do that. You just run the commands from your system python >= 3.9 and the meat of the program will be run in a virtual environment that you don't have to set up yourself.
 
 ## 4.
 Allows multiple configurations for multiple platforms, e.g. Linux, Windows, WSL2.
@@ -210,10 +210,10 @@ If it complains that this is missing, chances are you're trying to use this with
 
 First thing that went wrong is that when you try and put these urls into 
 the json setting file using the windows-style delimiter:
-C:\Users\carolann\AppData\Local\Programs\Python\Python310
+C:\Users\CoolGuy\AppData\Local\Programs\Python\Python310
 
 You can this "Invalid \escape" error. You need to reverse the slashes:
-C:/Users/carolann/AppData/Local/Programs/Python/Python310
+C:/Users/CoolGuy/AppData/Local/Programs/Python/Python310
 
 In the main.json and all your settings files.
 
