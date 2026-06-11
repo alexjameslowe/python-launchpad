@@ -20,13 +20,29 @@ Allows multiple configurations for multiple platforms, e.g. Linux, Windows, WSL2
 ### Note for Windows WSL2 users:
 #### Python usually lives in /mnt/c/Program Files and if you're running the installation commands from an Ubuntu shell, you're probably going to get an error "Permission Denied" when it attempts to create the virtual environmnet. You can either make things easy on yourself and just run the installation commands in Powershell, or you can specify a python version location that your Ubuntu shell has permissions for.
 
-0. On your other machine, make sure that python has virtualenv installed:
+### Requirements
+1. You must have requests installed on your system's python.
+
+```bash
+python -m pip install requests
+```
+
+2. You must have virtualenv installed on your system's python.
+
+```bash
 python -m pip install --user virtualenv
-The server must have git if you're going to include your dependencies like git+github.com/blah-blah.git
+```
 
-Windows Task Scheduler.
-If you ever have to reschedule, note that if you do it the first time and set it to activated in a future date e.g. tomorrow morning, then it won't appear in the scheduled tasks window, which is really annoying,
+3. If you plan to include any dependencies from git (e.g.  git+github.com/blah-blah.git), then you must have git installed.
 
+
+
+### Windows:  Task Scheduler.
+If you ever have to reschedule, note that if you do it the first time and set it to activated in a future date e.g. tomorrow morning, then it won't appear in the scheduled tasks window, which is really annoying.
+
+
+
+### Setup Steps
 1. Copy python_launchpad from the source into your project folder.
 
 2. cd to your project folder.
@@ -39,8 +55,8 @@ python_launchpad/
 
 <project-name-here> is a standin for a project handle that you decide. Python Launchpad will add some files to your project directory and this handle is a convenience so that you can easily distinguish launchpad files from other things in your directory. E.g., there will be a "coolproject_info.py", "coolproject_tasks.py" etc.
 
-```powershell
-python3 .\python_launchpad\main.py -init coolproject
+```bash
+python3 ./python_launchpad/main.py -init coolproject
 ```
 
 You'll notice that some files appear, among them coolproject_settings.json.
@@ -49,7 +65,7 @@ Open this file up. It will look like this:
 
 ```json
 {
-  "launchpad_handle":"python_launchpad",
+  "launchpad_handle":"<my project handle>",
   "windows": {
     "windows": {
       "system_python_handle":"python3",
@@ -89,7 +105,7 @@ Open this file up. It will look like this:
 
 Now, from your CLI, run the following command:
 
-```powershell
+```bash
 python3 coolproject.py -config
 ```
 
@@ -103,19 +119,14 @@ __pycache__
 
 Next, run the example task:
 
-```powershell
+```bash
 python3 coolproject.py -example-task
 ```
 
 ## Upgrading
-Upgrading is easy.
-*temporary* make a file --master-branch-uri.txt and in it, place the uri to the python_launchpad master branch. TODO make this point to github 
+Run:
 
-cd into your project folder, where mycoolproject_launchpad is.
-
-Run
-
-```powershell 
+```bash 
 python3 mycoolproject.py -upgrade
 ```
 And it will pull a copy of the master branch make all the substitutions and get your settings moved over.

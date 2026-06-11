@@ -54,9 +54,6 @@ def downloadMasterBranchToData():
 
 def upgrade(pfx):
 
-  #currentMasterURI = getVar('master-branch-uri').strip()
-  #downloadFile(currentMasterURI)
-
   ##This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python_launchpad
   downloadMasterBranchToData()
 

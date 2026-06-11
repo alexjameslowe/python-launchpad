@@ -16,6 +16,10 @@ syspath.append(path.dirname(SCRIPT_DIR))
 
 from python_launchpad.utils.Var import setVar, getVar, ERROR, RUNNING, PROCESS, GRACEFUL_EXIT
   
+class ValidationException(Exception):
+  pass
+
+
 #Run the report on a background processes, and gather information about what's going
 #on to the user to update the screen as we go.
 def launch(args, taskInfo):
@@ -136,9 +140,17 @@ def launch(args, taskInfo):
     #ALL the arguments, and it will be able to do things like check to see
     #if start_date is before end_date and things like that.
     if(fullValidator):
-      errMsg = fullValidator(argsKVP)
-      if(errMsg):
-        raise Exception(f"Validation Error: {errMsg}")
+      validationErr = None
+      try:
+        errMsg = fullValidator(argsKVP)
+        if(errMsg):
+          validationErr = errMsg
+      except Exception as e:
+        validationErr = f'Validator function encountered an error: {str(e)}'
+
+      if(validationErr != None):
+        raise ValidationException(validationErr)
+
 
     # And then add this one in so that it knows that it's the background task
     # and it therefore it will actually do the report.
@@ -150,6 +162,11 @@ def launch(args, taskInfo):
       process = subprocess.Popen(subProcessArgs, stdout=output, stderr=error)
       pid = process.pid
 
+  except ValidationException as e:
+    print(f'Validation Error: {str(e)}')
+
+    return False
+
   except Exception as e:
     print(f'Error starting Task: {str(e)}')
 
@@ -157,10 +174,7 @@ def launch(args, taskInfo):
     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
     error_string = ''.join(lines)
     print(error_string)
-    
-    #TODO remove this
-    #setVar(RUNNING, False)  
-
+   
     return False
 
   setVar(PROCESS, str(pid))

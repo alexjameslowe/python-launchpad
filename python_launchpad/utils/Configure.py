@@ -337,7 +337,7 @@ def writeProfileJSON():
   profileJSONPath = getProfile()
 
   with open(profileJSONPath, 'w') as jsonFile:
-    json.dump(profileJSONDataObj, jsonFile)
+    json.dump(profileJSONDataObj, jsonFile, indent=2)
     jsonFile.close()
 
   
@@ -347,7 +347,7 @@ def writeProfileJSON():
 #
 def writeMainJSON():
   with open(getMain(), 'w') as jsonFile:
-    json.dump(mainJSONDataObj, jsonFile)
+    json.dump(mainJSONDataObj, jsonFile, indent=2)
     jsonFile.close()
 
 ###
