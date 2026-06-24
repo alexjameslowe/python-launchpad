@@ -287,3 +287,14 @@ ERROR: Could not find a version that satisfies the requirement requests==2.34.2 
 ERROR: No matching distribution found for requests==2.34.2 (from -r /mnt/c/ICS/ICS/heartbeat/heartbeat_data/linux_wsl2_requirements.txt (line 3))
 
 And what we should do is have a nice complaint to the user that will show this list.
+
+
+
+## 48
+
+When i ran configure in WSL2 I had keyring set to true in the main.json
+
+it gave me this error
+Error: No recommended backend was available. Install a recommended 3rd party backend package; or, install the keyrings.alt package if you want to use the non-recommended backends. See https://pypi.org/project/keyring for details.
+
+What it didn't tell me was that it never generated the damn public_key.txt and so i had to chase that down for an hour. So that should be much more graceful.

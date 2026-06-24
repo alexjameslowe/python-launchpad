@@ -517,7 +517,6 @@ def setSecret(key, value, asjson=False, overwrite=True):
     print("---------------------------------------")
 
 
-
 ##
 # Decrypt a secret
 #
@@ -543,28 +542,26 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   #The manifest pairs the actual friendly and presumable somewhat sensitive
   #name of the secret with the random name.
   #If this is the manfest itself, then the filename is just 'manifest'
+  #Note that getPublicSecretName will read the manifest through a call to this function,
+  #So if it's manifest, then the filename is just the key, which is 'manifest'
   filename = getPublicSecretName(key, True) if(__manifest == False) else key
   
-  #If there's no filename yet, then this is empty and so pass default values
-  if(filename == None):
-    if(asjson):
-      return defval or None
-    elif(asint):
-      return defval or 0
-    elif(asfloat):
-      return defval or 0
-    elif(asbool):
-      return defval or False
-    elif(ascsvlist):
-      return defval or []
-    else:
-      return None
-
   cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
   cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
 
-  if(not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
-    return defval
+  if(filename == None or not path.isfile(cipherTextMainURI) or not path.isfile(cipherTextAESURI)):
+    if(asjson):
+      return None if defval == None else defval
+    elif(asint):
+      return 0 if defval == None else defval
+    elif(asfloat):
+      return 0 if defval == None else defval
+    elif(asbool):
+      return False if defval == None else defval
+    elif(ascsvlist):
+      return [] if defval == None else defval
+    else:
+      return None
 
   with open(cipherTextMainURI) as s1:
     cipherTextMainUTF8 = s1.read()
