@@ -134,8 +134,6 @@ def launch(args, taskInfo):
           #when you concatenate the args into a command and run it.
           subProcessArgs.append(str(argValue))
 
-  
-
     #If there's a validator attached to the info itself, then send it
     #ALL the arguments, and it will be able to do things like check to see
     #if start_date is before end_date and things like that.

@@ -30,7 +30,7 @@ SCRIPT_DIR = path.dirname(path.abspath(__file__))
 syspath.append(path.dirname(SCRIPT_DIR))
 
 
-#This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python_launchpad
+#This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python*_launchpad
 def downloadMasterBranchToData():
 
   localZipURI = joinPath(getDataDirectory(), 'python-launchpad.zip')
@@ -54,7 +54,7 @@ def downloadMasterBranchToData():
 
 def upgrade(pfx):
 
-  ##This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python_launchpad
+  ##This will expand it to <your_proj>_data/python-launchpad-master/python-launchpad-master/python*_launchpad
   downloadMasterBranchToData()
 
   lcpfx = pfx.lower()
@@ -88,7 +88,7 @@ def upgrade(pfx):
 
     print("** Fetching new master")
 
-    newCopiedPythonLauncpadFromMasterURI = joinPath(getDataDirectory(), 'python-launchpad-master', 'python-launchpad-master', 'python_launchpad')
+    newCopiedPythonLauncpadFromMasterURI = joinPath(getDataDirectory(), 'python-launchpad-master', 'python-launchpad-master', ORIGINAL_NAME)
 
     #Make a copy of the master branch and place it the parent of the launchpad directory.
     copytree(newCopiedPythonLauncpadFromMasterURI, joinPath(projectParentDir, ORIGINAL_NAME), dirs_exist_ok=True)
@@ -96,7 +96,7 @@ def upgrade(pfx):
     print("** Performing replacments")
 
     #Loop through the whole manifest of files and we're going to change
-    #all of the instances of 'python_launchpad' to the the new name e.g. myproj_launchpad
+    #all of the instances of 'python*_launchpad' (Star prevents that from being replaced) to the the new name e.g. myproj_launchpad
     fileManifest = readJSON(joinPath(launchpadDir, 'manifest.json'))
     for file in fileManifest:
       try:

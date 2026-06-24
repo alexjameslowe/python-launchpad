@@ -320,7 +320,7 @@ def addNewPrivateSecretNameToManifest(key, overwrite=False):
 # Get the actual name of the file from the manifest.
 #
 #
-def getPublicSecretName(key):
+def getPublicSecretName(key, emptyIsOK=False):
   readSecretsManifestJSON()
 
   randname = None
@@ -334,7 +334,10 @@ def getPublicSecretName(key):
       break  
 
   if(not found):
-    raise Exception(f"(034949o) No secret found for key: {key}")
+    if(emptyIsOK):
+      return None 
+    else:
+      raise Exception(f"(034949o) No secret found for key: {key}")
 
   if(not randname):
     raise Exception("No randname found. It could be that the manifest file is broken or corrupted.")
@@ -540,8 +543,23 @@ def getSecret(key, defval=None, asjson=False, asint=False, asbool=False, asfloat
   #The manifest pairs the actual friendly and presumable somewhat sensitive
   #name of the secret with the random name.
   #If this is the manfest itself, then the filename is just 'manifest'
-  filename = getPublicSecretName(key) if(__manifest == False) else key
+  filename = getPublicSecretName(key, True) if(__manifest == False) else key
   
+  #If there's no filename yet, then this is empty and so pass default values
+  if(filename == None):
+    if(asjson):
+      return defval or None
+    elif(asint):
+      return defval or 0
+    elif(asfloat):
+      return defval or 0
+    elif(asbool):
+      return defval or False
+    elif(ascsvlist):
+      return defval or []
+    else:
+      return None
+
   cipherTextMainURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}.txt")
   cipherTextAESURI = joinPath(getSecretsEncryptedDirectory(), f"{filename}{AES_SUFFIX}.txt")
 

@@ -204,6 +204,8 @@ You'll see your launchpad credentials there.
 
 When you do a deployment to another machine, what you have to do is run -get-private-key on your machine to output the private key to the screen, and then use -set-private-key
 
+You'll see the private key in Windows Credential Manager in <my proj>_launchpad
+
 
 ## Troubleshooting / Workflows
 
@@ -214,6 +216,12 @@ And that should be added to PATH. So I added it to the path environment variable
 
 ### Windows _win32sysloader
 If it complains that this is missing, chances are you're trying to use this with an older python version (3.8). I've seen this when trying to use watchdog. The solution is to just not use this old python version and use 3.10. 3.8 Just won't work.
+
+### virtualenv failed. Could not migrate app data
+fuel_master_2_sftp_data\venv_windows_windows"
+could not migrate app data from C:\Users\...\AppData\Local\pypa\virtualenv to C:\Users\...\AppData\Local\pypa\virtualenv\Cache: Error("Cannot move a directory 'C:\\Users\\...\\AppData\\Local\\pypa\\virtualenv' into itself 'C:\\Users\\...\\AppData\\Local\\pypa\\virtualenv\\Cache'."), using old location
+
+Something went wrong and you're using the wrong python version from the CLI with a different install of virtualenv
 
 
 ### Deployment headaches. Here's what went wrong:
