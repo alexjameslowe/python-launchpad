@@ -131,6 +131,23 @@ def dateToYYYYMMDD(dateObj=None, delimiter="-"):
   else: 
     return dateObj.strftime(f'%Y{delimiter}%m{delimiter}%d')
 
+# Get yyyy-mm-dd H:M:S with delimiters:
+# If dateObj is none, then return now.
+# %H: Hour (24-hour clock) as a zero-padded decimal number (00-23).
+# %M: Minute as a zero-padded decimal number (00-59).
+# %S: Second as a zero-padded decimal number (00-59).
+def dateToTimeStamp(dateObj=None, delimiter1="-", delimiter2=" ", delimiter3=":"):
+  # Get current date and time
+  d = dateObj or datetime.now()
+
+  dl1 = delimiter1
+  dl2 = delimiter2
+  dl3 = delimiter3
+
+  # Format as YYYY-MM-DD HH:MM:SS with the delimiters
+  formatted = d.strftime(f"%Y{dl1}%m{dl1}%d{dl2}%H{dl3}%M{dl3}%S")
+  return formatted
+
 
 #A helper function to get a date object out of a yyyy-mm-dd string
 def dateFromYYYYMMDD(yyyymmdd):

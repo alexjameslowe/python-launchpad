@@ -298,3 +298,9 @@ it gave me this error
 Error: No recommended backend was available. Install a recommended 3rd party backend package; or, install the keyrings.alt package if you want to use the non-recommended backends. See https://pypi.org/project/keyring for details.
 
 What it didn't tell me was that it never generated the damn public_key.txt and so i had to chase that down for an hour. So that should be much more graceful.
+
+## 49 
+
+Ran into this error on launch:
+Monitor error: (119384) [Errno 2] No such file or directory
+/blah/blah/heartbeat/heartbeat_data/vars/__RUNNING.txt

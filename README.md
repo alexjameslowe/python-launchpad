@@ -223,6 +223,9 @@ could not migrate app data from C:\Users\...\AppData\Local\pypa\virtualenv to C:
 
 Something went wrong and you're using the wrong python version from the CLI with a different install of virtualenv
 
+### Windows Task Scheduler: Failed to launch, code 101
+There's a lot that can cause this. You have to give it permission to run when it's not logged on. Your user needs to have the right permissions. Finally if something goes wrong, there's a setting "Don't launch new instance" for the "if a task is already running", and that could be causing this problem. If one fails, it might leave behind a ghost task that will prevent a new one from launching. If you say "Stop the current instance" and then run it a couple of times it should clear the old one out. 
+
 
 ### Deployment headaches. Here's what went wrong:
 ### windows Error: Invalid \escape:
