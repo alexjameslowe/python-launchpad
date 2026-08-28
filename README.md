@@ -33,7 +33,12 @@ python -m pip install requests
 python -m pip install --user virtualenv
 ```
 
-3. If you plan to include any dependencies from git (e.g.  git+github.com/blah-blah.git), then you must have git installed.
+3. You must have pexpect installed
+```bash
+python -m pip install pexpect
+```
+
+4. If you plan to include any dependencies from git (e.g.  git+github.com/blah-blah.git), then you must have git installed.
 
 
 
@@ -173,6 +178,33 @@ setSecret('THE_NAME_OF_SECRET', 'the new secret stuff', overwrite=True)
 python3 mycoolproject.py -get-private-key
 ```
 
+### Set private key
+You'll make a file, enter the private key into it, save and close, and then use the -set-private-key command to set it. We do this on web-servers because I've never had any luck with setting up a key manager on Ubunutu.
+
+So use use the above -get-private-key. It will look like this:
+
+-----BEGIN RSA PRIVATE KEY-----
+MIIEoAIBAAKCAQEA49xuTcKSnsVVwCGW/lsGzlcNyAUctSF/9d/r6hdYNM2Z+bz2
+.... ...
+qmdfADhDUedFnkGjWjexv2rO6jbGe/FCUPz1aa6PcTkpIf2BEdCW5nnxMbqVWncI
+YoB2Q/39KxBh/FehDIfnO3qb2++5tb+BqdLLOhqJz1z0KM4x
+-----END RSA PRIVATE KEY-----
+
+Then 
+
+```bash
+touch pkey.txt
+```
+And 
+
+```bash
+python3 mycoolproject.y -set-private-key <location of pkey.txt>
+```
+It will say:
+Private key logged.
+
+
+
 ### Cleanup task 
 ```bash
 python mycoolproject.py -cleanup-task -my-cool-task
@@ -205,6 +237,92 @@ You'll see your launchpad credentials there.
 When you do a deployment to another machine, what you have to do is run -get-private-key on your machine to output the private key to the screen, and then use -set-private-key
 
 You'll see the private key in Windows Credential Manager in <my proj>_launchpad
+
+## Setting up your environment with Pyenv (and why you need it)
+https://realpython.com/intro-to-pyenv/
+
+The deal is that your system has it's own version of python that you don't want to mess with. At the same time, this library required Python >= 3.10. There's other python versions you projects need but you can download them and store them wherever you like.
+
+su root 
+
+Then run:
+
+apt update
+
+apt install build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev curl git \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
+libffi-dev liblzma-dev
+
+curl https://pyenv.run | bash
+
+if .pyenv is in /root, then run
+
+mv /root/.pyenv /home/ics \
+chown -R ics:ics 
+
+Now, exit back to your regular user.
+
+Run these commands:
+
+export PATH="/home/ics/.pyenv/bin:$PATH"
+eval "$(pyenv init - bash)"
+
+Append to the bottom of .profile:
+export PATH="/home/ics/.pyenv/bin/:/home/ics/.pyenv/shims:$PATH"
+source ~/.profile
+
+Inside your /home/ics, you can use this:
+pyenv local 3.11
+
+Then python3 -V should always be 3.11 inside that folder, and the system is free to use the older version elsewhere.
+
+If you want to revert back to the system's python, then in /home/ics:
+rm .python-version
+
+
+
+Then install your version:
+pyenv install 3.10.0
+
+Then use it:
+pyenv 
+python version 
+
+Then use it:
+pyenv global 3.10.0
+
+python3 -V  
+will say Python 3.10.0
+
+OK ALSO WE HAVE TO INSTALL REQUESTS AND VIRTUALENV AAAAAA!!
+python3 -m pip install requests
+python3 -m pip install virtualenv
+python3 -m pip install pexpect
+
+
+
+## Connecting a launchpad script to crontab.
+
+If you're using pyenv (recommended), then you're going to have to reference the version of python explicitly because crontabs environment is different and it won't have access to your pyenv shims.
+
+So in that case here's an example:
+
+You bash file to call your script:
+
+```bash
+#!/bin/bash
+
+/home/youruser/.pyenv/shims/python3 /home/youruser/heartbeat-master/heartbeat.py -run-heartbeat -background
+```
+
+And your crontab. This will run every 5 minutes.
+
+*/5 * * * * /home/ics/heartbeat.sh > heartbeat_output.txt
+
+
+
+
 
 
 ## Troubleshooting / Workflows
@@ -244,7 +362,9 @@ Other thinggs that went wrong.
 ### The ps scripts had python3 hardcoded. 
 > This needs to use the setting system_python_handle
 
-### Switching python versions on your host machine
+
+
+### Switching python versions on your host machine (Less recommended)
 Linux:
 
 Note that python generally lives here: 
@@ -261,6 +381,12 @@ Now close down your host and reopen. You can verify the changes took ahold by ty
 python -V 
 
 To make sure that the version is what you expect to see.
+
+
+### 
+
+
+
 
 
 ### -get-private-key

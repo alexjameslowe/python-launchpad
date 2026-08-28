@@ -19,6 +19,7 @@
     "utils/Secrets.py",
     "utils/Var.py", 
     "utils/VEnv.py",
+    "utils/VShell.py",
     "launchpad.py",
     "main.py",
     "Tasks.py",

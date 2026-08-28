@@ -135,23 +135,40 @@ def getVar(varName, defval=None, asjson=False, asint=False, asbool=False, asfloa
   with portalocker.Lock(getVarURI(varName), 'r') as f:
     varContents = f.read()
 
-  if(varContents == "None"): 
-    return defval
+  # if(varContents == "None"): 
+  #   return defval
+  isEmpty = varContents == None or varContents == 'None' or varContents.strip() == ''
 
   if(asjson):
-    return {} if varContents == None or varContents == 'None' else json.loads(varContents)
+    jdefval = {} if defval == None else defval
+
+    return jdefval if isEmpty else json.loads(varContents)
   elif(asint):
-    return 0 if varContents == None or varContents == 'None' else int(varContents)
+    intdefval = 0 if defval == None else defval 
+
+    if(not isinstance(intdefval, int)):
+      raise Exception(f"9347r Improper type for defval. Expected int, got {str(type(defval))}")
+
+    return intdefval if isEmpty else int(varContents)
   elif(asfloat):
-    return 0 if varContents == None or varContents == 'None' else float(varContents)
+    floatdefval = 0 if defval == None else defval 
+
+    if(not isinstance(floatdefval, float)):
+      raise Exception(f"58392u Improper type for defval. Expected int, got {str(type(defval))}")
+
+    return floatdefval if isEmpty else float(varContents)
   elif(asbool):
+
+    if(isEmpty):
+      return str(defval)
+    
     return str(varContents) == "True"
   elif(ascsvlist):
-    varContentsNoNone = '' if varContents == None or varContents == 'None' else varContents
+    varContentsNoNone = '' if isEmpty else varContents
     splitsky = varContentsNoNone.split(',')
     return [] if splitsky == None else splitsky
   else:
-    return varContents
+    return defval if isEmpty else varContents
 
 def rmVar(varName):
   createVarsIfNeeded()

@@ -304,3 +304,48 @@ What it didn't tell me was that it never generated the damn public_key.txt and s
 Ran into this error on launch:
 Monitor error: (119384) [Errno 2] No such file or directory
 /blah/blah/heartbeat/heartbeat_data/vars/__RUNNING.txt
+
+
+## 50
+TODO. Python version management. It should be like this, right? All of your nasty messy little python versions should be stored somewhere. Maybe it can interface with pyenv. Or maybe you can manage them yourself. Point is that there should be some kind of strategy so that your system doesn't have tons of python versions around.
+
+The deal is that your system has it's own version of python that you don't want to mess with. At the same time, this library required Python >= 3.10. And keep in mind that your script might need other versions of Python internally. The goal of this set up is that your system should only have what it needs, then a single python version for it to run, and then maybe you have a dozen specific python versions that each project should run. Or 2 dozen, or whatever. The point is that those python versions should all be *hidden* inside your projects virtual environments. 
+
+## 51 
+clean this up documentation for setting up pyenv:
+## Setting up your environment with Pyenv (and why you need it)
+
+
+## 52
+Got this during config.
+Error: No recommended backend was available. Install a recommended 3rd party backend package; or, install the keyrings.alt package if you want to use the non-recommended backends. See https://pypi.org/project/keyring for details.
+
+See, if we get this, then it should just make a damned private key file and use that instead
+
+## 53     "python_location_for_venv": "C:/Program Files/Python39",
+Need to have a thing where will check to make sure that it's an actual extant version of python and complain if otherwise
+
+
+## 54 
+res = system(f'pip install -r "{getRequirementsFilePath()}"')
+system is deprecated. We need to use subprocess for this
+
+## 55
+In VEnv.py:
+    if(varBehavior != 'persist'):
+      setVar(varName, varVal)
+
+This doesn't do anything with the init value.
+
+
+##############################
+## Need to put this somewhere
+```python
+# print("Python executable:", sys.executable)
+# print("Python version:", sys.version)
+# print("Python path:")
+
+# for path in sys.path:
+#     print("   ", path)
+################################
+```

@@ -47,6 +47,7 @@ def main():
   parser.add_argument('-upgrade', help='Upgrade the project with a new launchpad', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-cleanup-task', help='Clean up after a task has failed in an ungraceful fashion like a crash', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-refresh-deps', help='Refresh the dependencies', required=False, default="0", const="1", nargs='?')
+  parser.add_argument('-vshell', help='Shell into the virtual environment', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-wsl-bridge-generate-keys', required=False, default="0", const="1", nargs='?')
   parser.add_argument('-wsl-bridge-get-private-key', required=False, default="0", const="1", nargs='?')
 
@@ -74,6 +75,7 @@ def main():
   wslBridgeGetPrivateKey = args.get("wsl_bridge_get_private_key", None) == "1"
   cleanupTask =  args.get("cleanup_task", None) == "1"
   refreshDeps = args.get("refresh_deps", None) == "1"
+  vshell = args.get('vshell', None) == "1"
 
   taskInfo = None
 
@@ -125,6 +127,10 @@ def main():
   #refresh the dependencies
   elif(refreshDeps):
     forceRefreshDependencies()
+
+  ## Come back to this. I don't know how to make this work.
+  elif(vshell):
+    pass
 
   #If we're setting a value in the profile data, then do that here.
   elif(setValue != None and forKey != None):
